@@ -1,0 +1,100 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/**
+ * Hyva theme override of Step 1a (guest lookup form).
+ * Sizing aligned with steps 1b/2/4: 22px heading, 15px subtitle/notice,
+ * 14px field labels, 13px hints, 28px card padding, 15px submit button.
+ *
+ * reCAPTCHA is rendered via the Hyva-native ViewModel for the
+ * `mageme_eu_withdrawal_lookup` config key. Form is POST so the v3
+ * token (and form_key) are not exposed via URL/Referer/server logs.
+ *
+ * @var \MageMe\EUWithdrawal\Block\Withdraw\FindOrderForm $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Hyva\Theme\Model\ViewModelRegistry $viewModels
+ * @var \Hyva\Theme\ViewModel\HyvaCsp $hyvaCsp
+ */
+
+use Hyva\Theme\ViewModel\ReCaptcha as ReCaptchaViewModel;
+
+$recaptcha = $viewModels->require(ReCaptchaViewModel::class);
+?>
+<section class="max-w-2xl mx-auto px-4 py-6">
+    <div class="rounded-xl border border-gray-200 bg-white p-7 shadow-sm max-sm:p-5">
+        <h2 class="text-[22px] font-semibold text-gray-900 leading-tight max-sm:text-[19px]"><?= $escaper->escapeHtml(__('Find your order')) ?></h2>
+        <p class="mt-2 text-[15px] text-gray-600 max-sm:text-[14px]">
+            <?= $escaper->escapeHtml(__('Enter the details you used during checkout to start a return or withdrawal.')) ?>
+        </p>
+
+        <?php if ($block->isLookupFailed()): ?>
+            <div role="alert" class="mt-4 rounded-md border border-red-300 bg-red-50 px-3.5 py-2.5 text-[14px] text-red-800">
+                <?= $escaper->escapeHtml(__('We could not find an order matching that email. Double-check your order number and email address.')) ?>
+            </div>
+        <?php endif; ?>
+
+        <form id="mm-eu-w-lookup-form"
+              class="mt-6 space-y-5"
+              method="post"
+              action="<?= $escaper->escapeUrl($block->getFormAction()) ?>"
+              x-data="mmEuwLookupForm()"
+              @submit.prevent="submitForm()">
+            <?= /* @noEscape */ $block->getBlockHtml('formkey') ?>
+            <div>
+                <label for="mm-eu-w-order-id" class="block text-[14px] font-medium text-gray-800"><?= $escaper->escapeHtml(__('Order number')) ?></label>
+                <input id="mm-eu-w-order-id" type="text" name="order_id" required
+                       class="mt-1.5 block w-full rounded-md border-gray-300 text-[15px] shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       placeholder="<?= $escaper->escapeHtmlAttr(__('e.g. 12345')) ?>">
+                <p class="mt-1 text-[13px] text-gray-500"><?= $escaper->escapeHtml(__('You can find this in your order confirmation email.')) ?></p>
+            </div>
+            <div>
+                <label for="mm-eu-w-email" class="block text-[14px] font-medium text-gray-800"><?= $escaper->escapeHtml(__('Email address')) ?></label>
+                <input id="mm-eu-w-email" type="email" name="email" required
+                       class="mt-1.5 block w-full rounded-md border-gray-300 text-[15px] shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       placeholder="<?= $escaper->escapeHtmlAttr(__('you@example.com')) ?>">
+                <p class="mt-1 text-[13px] text-gray-500"><?= $escaper->escapeHtml(__('Must match the email used for the order.')) ?></p>
+            </div>
+            <button type="submit" class="w-full rounded-lg bg-blue-600 px-5 py-2.5 text-[15px] font-semibold text-white shadow-sm hover:bg-blue-700 max-sm:py-3 max-sm:text-[16px]">
+                <?= $escaper->escapeHtml(__('Find my order')) ?>
+            </button>
+            <div class="flex justify-center pt-2">
+                <?= /* @noEscape */ $recaptcha ? $recaptcha->getInputHtml('mageme_eu_withdrawal_lookup') : '' ?>
+            </div>
+        </form>
+        <?= /* @noEscape */ $recaptcha ? $recaptcha->getLegalNoticeHtml('mageme_eu_withdrawal_lookup') : '' ?>
+    </div>
+
+    <div class="mt-6 flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-4 text-[15px] text-blue-900">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="mt-0.5 shrink-0 text-blue-600"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/></svg>
+        <span><?= $escaper->escapeHtml(__('You have the right to withdraw from your purchase within 14 days of receiving your order, without giving any reason.')) ?></span>
+    </div>
+
+    <p class="mt-4 text-center text-[14px] text-gray-600">
+        <?= $escaper->escapeHtml(__('Need help finding your order?')) ?>
+        <a class="ml-1 font-medium text-blue-600 hover:underline" href="<?= $escaper->escapeUrl($block->getSupportUrl()) ?>">
+            <?= $escaper->escapeHtml(__('Contact support')) ?>
+        </a>
+    </p>
+</section>
+
+<script>
+    'use strict';
+    function mmEuwLookupForm() {
+        return {
+            errors: 0,
+            hasCaptchaToken: 0,
+            submitForm() {
+                // Do not rename $form, the variable is expected to be declared in the recaptcha output.
+                const $form = document.querySelector('#mm-eu-w-lookup-form');
+                <?= /* @noEscape */ $recaptcha ? $recaptcha->getValidationJsHtml('mageme_eu_withdrawal_lookup') : '' ?>
+
+                if (this.errors === 0) {
+                    $form.submit();
+                }
+            }
+        };
+    }
+</script>
+<?php isset($hyvaCsp) && $hyvaCsp->registerInlineScript() ?>

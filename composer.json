@@ -1,0 +1,41 @@
+{
+  "name": "mageme/module-eu-withdrawal-hyva",
+  "description": "Hyva theme compatibility for mageme/module-eu-withdrawal. Re-renders the customer-facing withdrawal form (4-step SPA + lookup) and order-view integrations using pure Alpine.js + Tailwind utilities — no KO, no jQuery, no Magewire dependency. Hyva checkout integration (precontract block + waiver step) is shipped separately. NOT legal advice — see README disclaimer.",
+  "version": "1.0.0",
+  "type": "magento2-module",
+  "license": "proprietary",
+  "keywords": [
+    "magento2",
+    "hyva",
+    "hyva-themes",
+    "alpinejs",
+    "tailwind",
+    "consumer-protection",
+    "eu-compliance",
+    "withdrawal",
+    "art-11a",
+    "directive-2011-83",
+    "mageme",
+    "theme-compatibility"
+  ],
+  "authors": [
+    {
+      "name": "MageMe",
+      "homepage": "https://mageme.com",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": "~8.1.0||~8.2.0||~8.3.0||~8.4.0||~8.5.0",
+    "mageme/module-eu-withdrawal": "^1.0",
+    "hyva-themes/magento2-theme-module": "^1.3.11"
+  },
+  "autoload": {
+    "files": [
+      "registration.php"
+    ],
+    "psr-4": {
+      "Hyva\\MageMeEUWithdrawal\\": ""
+    }
+  }
+}

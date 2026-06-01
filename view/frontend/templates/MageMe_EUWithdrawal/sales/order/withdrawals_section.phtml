@@ -1,0 +1,209 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+declare(strict_types=1);
+
+/**
+ * Hyva theme override of withdrawal section on sales/order/view page.
+ * Tailwind + Alpine. Sized to match Luma's _withdrawals-section.less for cross-theme parity:
+ * 15px section body, 16px h3, 14px deadline-body p, 13px hint/cite/when/meta, 12px pill,
+ * 56px detail thumb, etc. Caveat styling mirrors Luma's amber 3px left-border block.
+ *
+ * @var \MageMe\EUWithdrawal\Block\Sales\Order\WithdrawalsSection $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+if (!$block->shouldRender()) {
+    return;
+}
+$requests   = $block->getRequests();
+$cancelUrl  = $block->getCancelUrl();
+$formKey    = $block->getFormKeyValue();
+$cardState  = $block->getCardState();
+?>
+<section class="mt-6 mb-6 space-y-4 text-[15px] leading-normal text-gray-700"
+         aria-label="<?= $escaper->escapeHtmlAttr(__('Withdrawal options for this order')) ?>"
+         x-data="{ openRow: null, confirmId: null, confirmMsg: '' }">
+
+    <?php if ($cardState !== null): ?>
+        <?php
+        // Mirrors Luma's `_withdrawals-section.less` palette: info-bg (light blue) for eligible
+        // and eligible_pending; bg-subtle (gray) for pending / expired / excluded variants.
+        $cardCls = match ($cardState) {
+            'eligible', 'eligible_pending' => 'border-blue-200 bg-blue-50',
+            default => 'border-gray-200 bg-gray-100',
+        };
+        $iconColorCls = match ($cardState) {
+            'eligible', 'eligible_pending' => 'text-blue-600',
+            default => 'text-gray-500',
+        };
+        ?>
+        <div class="rounded-lg border <?= $escaper->escapeHtmlAttr($cardCls) ?> px-[22px] py-[18px] sm:flex sm:items-center sm:gap-4">
+            <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white <?= $escaper->escapeHtmlAttr($iconColorCls) ?>" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="11" width="16" height="9" rx="2"/>
+                    <path d="M8 11V7a4 4 0 1 1 8 0v4"/>
+                    <path d="m9.5 15 2 2 3.5-4"/>
+                </svg>
+            </span>
+            <div class="mt-3 grow min-w-0 sm:mt-0">
+                <h3 class="text-[16px] font-semibold leading-snug text-gray-900 mb-1"><?= $escaper->escapeHtml($block->getCardHeading()) ?></h3>
+                <?php if ($cardState === 'eligible'): ?>
+                    <p class="text-[14px] leading-relaxed text-gray-700">
+                        <?php $iso = $block->getDeadlineIsoUtc(); $disp = $block->getDeadlineDisplay(); ?>
+                        <?= /* @noEscape */ __(
+                            'You can return this order until %1.',
+                            '<time datetime="' . $escaper->escapeHtmlAttr((string) $iso) . '" class="font-semibold">' . $escaper->escapeHtml((string) $disp) . '</time>',
+                        ) ?>
+                        <span class="ml-1 text-[12px] text-gray-500"><?= $escaper->escapeHtml(__('(Art. 11a Directive 2011/83/EU)')) ?></span>
+                    </p>
+                    <p class="mt-1 text-[13px] text-gray-500">
+                        <?= $escaper->escapeHtml(__('Submit a withdrawal request to start the refund process.')) ?>
+                    </p>
+                <?php elseif ($cardState === 'eligible_pending'): ?>
+                    <p class="text-[14px] leading-relaxed text-gray-700"><?= $escaper->escapeHtml($block->getCardMessage()) ?>
+                       <span class="ml-1 text-[12px] text-gray-500"><?= $escaper->escapeHtml(__('(Art. 9(2)(b) Directive 2011/83/EU)')) ?></span>
+                    </p>
+                <?php else: ?>
+                    <p class="text-[14px] leading-relaxed text-gray-700"><?= $escaper->escapeHtml($block->getCardMessage()) ?></p>
+                <?php endif; ?>
+
+                <?php $caveats = $block->getConditionalCaveats(); ?>
+                <?php if ($caveats !== [] && in_array($cardState, ['eligible', 'eligible_pending'], true)): ?>
+                    <ul class="mt-3 space-y-1.5">
+                        <?php foreach ($caveats as $caveat): ?>
+                            <li class="flex items-start gap-2.5 rounded border border-amber-200 border-l-[3px] border-l-amber-500 bg-amber-50/70 px-3 py-2.5 text-[13px] leading-snug text-gray-600">
+                                <span aria-hidden="true" class="text-amber-500 text-[16px] leading-none pt-0.5">⚠</span>
+                                <span class="flex-1">
+                                    <?= $escaper->escapeHtml($caveat['label']) ?>
+                                    <span class="ml-1 whitespace-nowrap text-[12px] text-gray-400">(<?= $escaper->escapeHtml($caveat['basis']) ?>)</span>
+                                </span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+            </div>
+            <?php if ($block->shouldShowStartButton()): ?>
+                <div class="mt-4 sm:mt-0 sm:shrink-0">
+                    <a class="inline-flex items-center justify-center rounded-md bg-blue-600 px-[22px] py-[10px] text-[14px] font-semibold leading-snug text-white whitespace-nowrap hover:bg-blue-700"
+                       href="<?= $escaper->escapeUrl($block->getStartUrl()) ?>">
+                        <?= $escaper->escapeHtml(__('Start withdrawal')) ?>
+                    </a>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($requests !== []): ?>
+        <div class="rounded-lg border border-gray-200 bg-white px-5 py-4 shadow-sm">
+            <header class="flex items-baseline gap-1.5 border-b border-gray-200 pb-3 mb-2">
+                <span class="text-[15px] font-semibold text-gray-900"><?= $escaper->escapeHtml(__('Your withdrawal requests')) ?></span>
+                <span class="text-[14px] text-gray-500">(<?= (int) count($requests) ?>)</span>
+            </header>
+            <ul>
+                <?php foreach ($requests as $request): ?>
+                    <?php $badge = $block->getStatusBadge($request->status); ?>
+                    <?php if ($badge['hidden']) { continue; } ?>
+                    <?php $rid = (int) $request->requestId; ?>
+                    <?php
+                    // CSP-safe palette mapping (no inline `style="..."` to mirror the parent block's
+                    // hex pairs). Status keys match `Block\Sales\Order\WithdrawalsSection::getStatusBadge()`.
+                    $badgePaletteCls = match ($request->status) {
+                        'pending'         => 'bg-amber-100 text-amber-800',
+                        'approved'        => 'bg-emerald-100 text-emerald-800',
+                        'denied'          => 'bg-red-100 text-red-800',
+                        'cancelled'       => 'bg-gray-200 text-gray-700',
+                        default           => 'bg-gray-100 text-gray-700',
+                    };
+                    ?>
+                    <li class="border-t border-gray-200 py-3.5 first:border-t-0 first:pt-0" data-request-id="<?= (int) $rid ?>">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <span class="inline-block rounded-full px-2.5 py-0.5 text-[12px] font-semibold leading-snug whitespace-nowrap <?= $escaper->escapeHtmlAttr($badgePaletteCls) ?>">
+                                <?= $escaper->escapeHtml($badge['label']) ?>
+                            </span>
+                            <span class="font-mono text-[13px] font-semibold text-gray-900"><?= $escaper->escapeHtml($request->incrementId) ?></span>
+                            <span class="text-[13px] text-gray-500"><?= $escaper->escapeHtml(__('Submitted %1', $block->getSubmittedAtDisplay($request))) ?></span>
+                            <span class="text-[13px] text-gray-500"><?= $escaper->escapeHtml($block->getRequestSubtitle($request)) ?></span>
+                            <span class="ml-auto inline-flex items-center gap-2">
+                                <button type="button"
+                                        class="inline-flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 bg-white text-gray-500 transition-transform hover:bg-gray-50 hover:text-gray-700"
+                                        :class="openRow === <?= (int) $rid ?> ? 'rotate-180' : ''"
+                                        :aria-expanded="openRow === <?= (int) $rid ?>"
+                                        @click="openRow = (openRow === <?= (int) $rid ?> ? null : <?= (int) $rid ?>)"
+                                        aria-label="<?= $escaper->escapeHtmlAttr(__('Show items')) ?>">
+                                    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="5 8 10 13 15 8"/></svg>
+                                </button>
+                                <?php if ($request->cancellable): ?>
+                                    <button type="button"
+                                            class="inline-flex items-center rounded-md border border-gray-200 bg-white px-3.5 py-1.5 text-[13px] font-semibold leading-snug text-gray-700 hover:border-gray-300 hover:text-red-600"
+                                            @click="confirmId = <?= (int) $rid ?>; confirmMsg = '<?= $escaper->escapeJs($block->getCancelConfirmMessage($request)) ?>';">
+                                        <?= $escaper->escapeHtml(__('Cancel withdrawal')) ?>
+                                    </button>
+                                <?php endif; ?>
+                            </span>
+                        </div>
+                        <div x-show="openRow === <?= (int) $rid ?>" x-cloak class="mt-3.5 rounded-md bg-gray-50 px-4 py-3.5">
+                            <?php $statusReason = $block->getStatusReason($request); ?>
+                            <?php if ($statusReason !== null): ?>
+                                <div class="mb-3 rounded-md border border-gray-200 bg-white px-3.5 py-3">
+                                    <div class="text-[12px] font-semibold text-gray-900"><?= $escaper->escapeHtml($statusReason['label']) ?></div>
+                                    <?php if ($statusReason['legal_basis'] !== ''): ?>
+                                        <div class="mt-1 text-[13px] italic leading-snug text-gray-700"><?= /* @noEscape */ nl2br($escaper->escapeHtml($statusReason['legal_basis'])) ?></div>
+                                    <?php endif; ?>
+                                    <?php if ($statusReason['note'] !== ''): ?>
+                                        <div class="mt-1 text-[13px] leading-snug text-gray-500"><?= /* @noEscape */ nl2br($escaper->escapeHtml($statusReason['note'])) ?></div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                            <ul>
+                                <?php foreach ($request->items as $item): ?>
+                                    <?php $imgUrl = $block->getProductImageUrl((int) $item['order_item_id']); ?>
+                                    <li class="grid grid-cols-[56px_minmax(0,1fr)_60px_140px_80px] items-center gap-3 border-t border-gray-200 py-2.5 text-[13px] text-gray-700 first:border-t-0 first:pt-0">
+                                        <span class="block h-14 w-14 overflow-hidden rounded border border-gray-200 bg-white">
+                                            <?php if ($imgUrl !== null): ?>
+                                                <img src="<?= $escaper->escapeUrl($imgUrl) ?>" alt="<?= $escaper->escapeHtmlAttr((string) $item['name']) ?>" class="h-full w-full object-cover"/>
+                                            <?php endif; ?>
+                                        </span>
+                                        <span class="min-w-0">
+                                            <strong class="block truncate font-semibold leading-snug text-gray-900"><?= $escaper->escapeHtml((string) $item['name']) ?></strong>
+                                            <span class="mt-0.5 block text-[11px] text-gray-500"><?= $escaper->escapeHtml(__('SKU')) ?>: <?= $escaper->escapeHtml((string) $item['sku']) ?></span>
+                                        </span>
+                                        <span class="text-center text-[12px] text-gray-500"><?= $escaper->escapeHtml(__('Qty %1', (int) $item['qty'])) ?></span>
+                                        <span class="truncate text-[12px] text-gray-500"><?= $escaper->escapeHtml($block->getItemReasonDisplay($item)) ?></span>
+                                        <span class="text-right text-[13px] font-semibold text-gray-900"><?= $escaper->escapeHtml($block->formatItemRefund($item)) ?></span>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+
+        <!-- Confirm modal -->
+        <div x-show="confirmId !== null" x-cloak
+             class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+             @keydown.escape.window="confirmId = null">
+            <div class="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
+                <p class="text-[14px] leading-relaxed text-gray-800" x-text="confirmMsg"></p>
+                <div class="mt-4 flex justify-end gap-2">
+                    <button type="button" class="rounded-md border border-gray-300 bg-white px-3.5 py-1.5 text-[13px] font-semibold text-gray-700 hover:bg-gray-50" @click="confirmId = null">
+                        <?= $escaper->escapeHtml(__('Keep it')) ?>
+                    </button>
+                    <button type="button"
+                            class="rounded-md bg-red-600 px-3.5 py-1.5 text-[13px] font-semibold text-white hover:bg-red-700"
+                            @click="document.getElementById('mm-eu-w-cancel-rid').value = confirmId; document.getElementById('mm-eu-w-cancel-form').submit();">
+                        <?= $escaper->escapeHtml(__('Yes, cancel')) ?>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <form id="mm-eu-w-cancel-form" method="post" action="<?= $escaper->escapeUrl($cancelUrl) ?>" class="hidden">
+            <input type="hidden" name="form_key" value="<?= $escaper->escapeHtmlAttr($formKey) ?>"/>
+            <input type="hidden" name="request_id" value="" id="mm-eu-w-cancel-rid"/>
+            <input type="hidden" name="return_url" value="<?= $escaper->escapeUrl($block->getCurrentPageUrl()) ?>"/>
+        </form>
+    <?php endif; ?>
+</section>

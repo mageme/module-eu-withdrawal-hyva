@@ -1,0 +1,85 @@
+<?php
+/**
+ * Copyright © MageMe. All rights reserved.
+ * See LICENSE for license terms, or https://mageme.com/license.
+ */
+/**
+ * Hyva theme override of Step 1b (orders list).
+ * Sized to match Luma: 80x80 thumbnails, 28px card padding, 15px body font,
+ * 17px order number, 18px order total, larger Select-order button.
+ *
+ * @var \MageMe\EUWithdrawal\Block\Withdraw\OrderSelector $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+$orders = $block->getOrders();
+?>
+<section class="max-w-6xl mx-auto px-4 py-6">
+    <div class="rounded-xl border border-gray-200 bg-white p-7 shadow-sm max-sm:p-5">
+        <h2 class="text-[22px] font-semibold text-gray-900 leading-tight max-sm:text-[19px]"><?= $escaper->escapeHtml(__('Select an order')) ?></h2>
+        <p class="mt-2 text-[15px] text-gray-600 max-sm:text-[14px]">
+            <?= $escaper->escapeHtml(__('Choose an order from your history to start a return or withdrawal.')) ?>
+        </p>
+
+        <?php if (empty($orders)): ?>
+            <div class="mt-6 rounded-lg bg-gray-50 px-4 py-8 text-center">
+                <p class="text-[15px] text-gray-700">
+                    <?= $escaper->escapeHtml(__("You don't have any orders eligible for withdrawal. The 14-day withdrawal window runs from the day you received your order.")) ?>
+                </p>
+                <a class="mt-4 inline-block text-[15px] font-medium text-blue-600 hover:underline" href="<?= $escaper->escapeUrl($block->getOrderHistoryUrl()) ?>">
+                    <?= $escaper->escapeHtml(__('View all my orders')) ?>
+                </a>
+            </div>
+        <?php else: ?>
+            <ul class="mt-6 divide-y divide-gray-200">
+                <?php foreach ($orders as $order): ?>
+                    <?php $tns = $block->getItemThumbnails($order); $extra = $block->getExtraItemCount($order); ?>
+                    <li class="grid grid-cols-1 gap-4 py-5 sm:grid-cols-[auto_1fr_auto_auto] sm:items-center">
+                        <div class="flex gap-1.5">
+                            <?php foreach ($tns as $idx => $tn): ?>
+                                <div class="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 max-sm:h-14 max-sm:w-14">
+                                    <?php if ($tn['url'] !== ''): ?>
+                                        <img src="<?= $escaper->escapeUrl($tn['url']) ?>" alt="<?= $escaper->escapeHtmlAttr($tn['alt']) ?>" class="h-full w-full object-cover">
+                                    <?php else: ?>
+                                        <div class="flex h-full w-full items-center justify-center text-gray-400"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-4 9 4v10l-9 4-9-4z"/><polyline points="3 9 12 13 21 9"/><line x1="12" y1="13" x2="12" y2="22"/></svg></div>
+                                    <?php endif; ?>
+                                    <?php if ($idx === count($tns) - 1 && $extra > 0): ?>
+                                        <span class="absolute inset-0 flex items-center justify-center bg-black/55 text-xs font-semibold leading-tight text-white text-center px-1">+<?= (int) $extra ?> <?= $escaper->escapeHtml(__('items')) ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="text-[17px] font-semibold text-gray-900 leading-tight whitespace-nowrap max-sm:text-[16px] max-sm:whitespace-normal">
+                                <?= $escaper->escapeHtml(__('Order #%1', $block->getOrderIncrementId($order))) ?>
+                            </div>
+                            <div class="mt-1 text-[15px] text-gray-500">
+                                <?= $escaper->escapeHtml(__('Placed on %1', $block->formatOrderDate($order))) ?>
+                                <?php $delivered = $block->formatDeliveryDate($order); ?>
+                                <?php if ($delivered !== ''): ?>
+                                    · <?= $escaper->escapeHtml(__('Delivered on %1', $delivered)) ?>
+                                <?php else: ?>
+                                    · <?= $escaper->escapeHtml(__('Awaiting delivery')) ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="text-right whitespace-nowrap max-sm:text-left">
+                            <div class="text-[18px] font-semibold text-gray-900 max-sm:text-[17px]"><?= $escaper->escapeHtml($block->formatOrderTotal($order)) ?></div>
+                            <div class="text-sm text-gray-500"><?= $escaper->escapeHtml($block->getShippingMethodLabel($order)) ?></div>
+                        </div>
+                        <div class="justify-self-end max-sm:justify-self-stretch">
+                            <a class="inline-flex items-center justify-center gap-2 whitespace-nowrap min-w-[140px] rounded-lg border border-blue-600 px-5 py-2.5 text-[15px] font-semibold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors group max-sm:w-full max-sm:py-3 max-sm:text-[16px]" href="<?= $escaper->escapeUrl($block->getStep2Url($order)) ?>">
+                                <span><?= $escaper->escapeHtml(__('Select order')) ?></span>
+                                <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-0.5"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="8,3 13,8 8,13"/></svg>
+                            </a>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+    </div>
+
+    <div class="mt-6 flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-4 text-[15px] text-blue-900">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="mt-0.5 shrink-0 text-blue-600"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/></svg>
+        <span><?= $escaper->escapeHtml(__('You have the right to withdraw from your purchase within 14 days of receiving your order, without giving any reason.')) ?></span>
+    </div>
+</section>
