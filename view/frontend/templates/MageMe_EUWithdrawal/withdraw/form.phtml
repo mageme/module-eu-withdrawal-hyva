@@ -53,6 +53,12 @@ $otherReasonAllowed = $itemSelectorChild instanceof \MageMe\EUWithdrawal\Block\W
 $shippingPaid = $orderForMeta !== null ? (float) $orderForMeta->getShippingAmount() : 0.0;
 $shippingTax  = $orderForMeta !== null ? (float) $orderForMeta->getShippingTaxAmount() : 0.0;
 $currency     = $orderForMeta !== null ? (string) $orderForMeta->getOrderCurrencyCode() : 'EUR';
+// Order-level adjustment preview (payment discount, gift card, custom total):
+// base + gap let Alpine distribute the same order-level adjustment the server
+// applies. Empty for standard orders.
+$orderLevel = $orderForMeta !== null
+    ? $block->getOrderLevelGap($orderForMeta)
+    : ['base' => 0.0, 'gap' => 0.0];
 
 $items         = [];
 $eligibleItems = [];
@@ -150,6 +156,8 @@ $boot = [
     'shippingTax'      => round($shippingTax, 2),
     'currency'         => $currency,
     'eligibleItems'    => (object) $eligibleItems,
+    'orderItemsBase'   => round($orderLevel['base'], 4),
+    'orderLevelGap'    => round($orderLevel['gap'], 4),
     'items'            => $items,
     'reasonsEnabled'   => $reasonsEnabled,
     'otherReasonAllowed' => $otherReasonAllowed,
@@ -399,6 +407,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                         <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Subtotal')) ?></dt><dd class="text-gray-900" x-text="formatPrice(subtotal())"></dd></div>
                         <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Shipping & Handling')) ?></dt><dd class="text-gray-900" x-text="formatPrice(shippingRefund())"></dd></div>
                         <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Tax')) ?></dt><dd class="text-gray-900" x-text="formatPrice(tax())"></dd></div>
+                        <div class="flex justify-between" x-show="Math.abs(orderAdjustment()) >= 0.005"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Order adjustment')) ?></dt><dd class="text-gray-900" x-text="formatPrice(orderAdjustment())"></dd></div>
                         <div class="mt-3 flex justify-between border-t border-gray-200 pt-3 text-[17px] font-bold text-gray-900"><dt><?= $escaper->escapeHtml(__('Total refund')) ?></dt><dd x-text="formatPrice(grandTotal())"></dd></div>
                     </dl>
                 </template>
@@ -506,6 +515,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                     <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Subtotal')) ?></dt><dd class="text-gray-900" x-text="formatPrice(subtotal())"></dd></div>
                     <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Shipping & Handling')) ?></dt><dd class="text-gray-900" x-text="formatPrice(shippingRefund())"></dd></div>
                     <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Tax')) ?></dt><dd class="text-gray-900" x-text="formatPrice(tax())"></dd></div>
+                    <div class="flex justify-between" x-show="Math.abs(orderAdjustment()) >= 0.005"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Order adjustment')) ?></dt><dd class="text-gray-900" x-text="formatPrice(orderAdjustment())"></dd></div>
                     <div class="mt-3 flex justify-between border-t border-gray-200 pt-3 text-[17px] font-bold text-gray-900"><dt><?= $escaper->escapeHtml(__('Total refund')) ?></dt><dd x-text="formatPrice(grandTotal())"></dd></div>
                 </dl>
                 <p class="mt-4 flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[15px] leading-snug text-emerald-800">
@@ -772,8 +782,20 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                 );
             },
 
+            orderAdjustment() {
+                // Distribute the order-level gap by the returned share,
+                // mirroring RefundCalculator::calculate() on the server.
+                const base = Number(this.boot.orderItemsBase || 0);
+                const gap = Number(this.boot.orderLevelGap || 0);
+                if (Math.abs(gap) <= 0.005 || base <= 0) return 0;
+                return this.roundHalfEven(gap * (this.subtotal() / base), 4);
+            },
+
             grandTotal() {
-                return this.roundHalfEven(this.subtotal() + this.tax() + this.shippingRefund(), 4);
+                return this.roundHalfEven(
+                    this.subtotal() + this.tax() + this.shippingRefund() + this.orderAdjustment(),
+                    4,
+                );
             },
 
             formatPrice(amount) {

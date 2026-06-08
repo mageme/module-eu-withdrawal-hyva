@@ -1,3 +1,7 @@
+## 1.0.2
+
+- Fix: The withdrawal refund summary now reflects order-level discounts and other custom totals.
+
 ## 1.0.1
 
 + New: "Show more" in the order picker — load more eligible orders on demand.
