@@ -40,8 +40,15 @@ $orderMeta       = $block->getChildBlock('order_meta');
 $orderIncrement  = $orderMeta instanceof \MageMe\EUWithdrawal\Block\Withdraw\OrderMeta ? $orderMeta->getOrderIncrementId() : '';
 $orderForMeta    = $orderMeta instanceof \MageMe\EUWithdrawal\Block\Withdraw\OrderMeta ? $orderMeta->getOrder() : null;
 
-$itemSelectorChild = $block->getChildBlock('item_selector');
-$pendingByItem     = method_exists($block, 'getPendingRequestsByOrderItemId') ? $block->getPendingRequestsByOrderItemId() : [];
+$itemSelectorChild   = $block->getChildBlock('item_selector');
+$selectionModeVm     = $itemSelectorChild ? $itemSelectorChild->getData('selection_mode_view_model') : null;
+$isFullOrder         = $selectionModeVm !== null && $selectionModeVm->isFullOrderMode();
+
+// Art. 11a(3) confirmation label: counsel-signed per-locale whitelist string,
+// rendered verbatim (never through __()).
+$confirmLabelVm      = $block->getData('confirm_button_label_view_model');
+$confirmLabel        = $confirmLabelVm !== null ? $confirmLabelVm->getLabel() : 'Confirm withdrawal';
+$pendingByItem       = method_exists($block, 'getPendingRequestsByOrderItemId') ? $block->getPendingRequestsByOrderItemId() : [];
 $reasonsEnabled    = $itemSelectorChild instanceof \MageMe\EUWithdrawal\Block\Withdraw\ItemSelector
     && $itemSelectorChild->isReasonsEnabled();
 $reasonOptions     = $itemSelectorChild instanceof \MageMe\EUWithdrawal\Block\Withdraw\ItemSelector
@@ -162,6 +169,7 @@ $boot = [
     'reasonsEnabled'   => $reasonsEnabled,
     'otherReasonAllowed' => $otherReasonAllowed,
     'reasonOptions'    => $reasonOptions,
+    'fullOrder'        => $isFullOrder,
     'i18n'             => [
         'orderPrefix'        => (string) __('Order #'),
         'qtyPrefix'          => (string) __('Qty: '),
@@ -175,7 +183,7 @@ $boot = [
 $noEligibleItems = method_exists($block, 'hasAnyEligibleItem') && !$block->hasAnyEligibleItem();
 $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block->isRequestedOrderMismatched();
 ?>
-<section class="mm-eu-w-spa max-w-6xl mx-auto px-4 py-6"
+<section class="mm-eu-w-spa max-w-6xl mx-auto px-4 py-6 max-sm:px-0 max-sm:py-4"
          x-data='withdrawalApp(<?= /* @noEscape */ json_encode($boot, JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'
          x-cloak>
     <?= $block->getBlockHtml('formkey') ?>
@@ -189,10 +197,12 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
     <!-- Panel 2: select items -->
     <div x-show="step === '2'" class="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div class="space-y-6">
-            <div class="rounded-xl border border-gray-200 bg-white p-7 shadow-sm max-sm:p-5">
+            <div class="rounded-xl border border-gray-200 bg-white p-7 shadow-sm max-sm:border-0 max-sm:rounded-none max-sm:shadow-none max-sm:p-0 max-sm:bg-transparent">
                 <h2 class="text-[22px] font-semibold text-gray-900 leading-tight max-sm:text-[19px]"><?= $escaper->escapeHtml(__('Select items to return')) ?></h2>
                 <p class="mt-2 text-[15px] text-gray-600 max-sm:text-[14px]">
-                    <?= $escaper->escapeHtml(__('Choose all items or only some of them. Set the return quantity for each item you want to withdraw.')) ?>
+                    <?= $escaper->escapeHtml($isFullOrder
+                        ? __('Review the items included in your return.')
+                        : __('Choose all items or only some of them. Set the return quantity for each item you want to withdraw.')) ?>
                 </p>
 
                 <?php if ($orderMeta instanceof \MageMe\EUWithdrawal\Block\Withdraw\OrderMeta): ?>
@@ -248,7 +258,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                             <template x-for="row in items" :key="row.id">
                                 <template x-if="true">
                                     <tbody class="contents">
-                                        <tr :class="!row.eligible ? 'opacity-60' : ''" class="border-b border-gray-100 max-sm:grid max-sm:grid-cols-[64px_1fr_auto] max-sm:items-start max-sm:gap-x-3 max-sm:gap-y-2.5 max-sm:rounded-lg max-sm:border max-sm:bg-gray-50 max-sm:p-3.5 max-sm:mb-3">
+                                        <tr :class="!row.eligible ? 'opacity-60' : ''" class="border-b border-gray-100 max-sm:grid max-sm:grid-cols-[64px_1fr_auto] max-sm:items-start max-sm:gap-x-3 max-sm:gap-y-2.5 max-sm:rounded-lg max-sm:border max-sm:border-gray-200 max-sm:bg-white max-sm:p-3.5 max-sm:mb-3">
                                             <td class="py-4 pr-2 align-middle max-sm:col-start-1 max-sm:row-start-1 max-sm:p-0">
                                                 <template x-if="row.thumb">
                                                     <img :src="row.thumb" :alt="row.name" class="h-20 w-20 rounded-lg border border-gray-200 bg-gray-50 object-cover max-sm:h-16 max-sm:w-16">
@@ -273,7 +283,8 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                                             <td class="py-4 px-2 text-center align-middle text-[16px] text-gray-700 max-sm:col-start-3 max-sm:row-start-1 max-sm:p-0 max-sm:text-right max-sm:text-[14px] max-sm:font-semibold max-sm:before:content-['Qty:_'] max-sm:before:text-gray-500 max-sm:before:font-normal" x-text="row.purchased"></td>
                                             <td class="py-4 px-2 text-center align-middle text-[16px] text-gray-700 max-sm:hidden" x-text="row.returned"></td>
                                             <td class="py-4 px-2 text-center align-middle max-sm:col-start-1 max-sm:col-end-3 max-sm:row-start-2 max-sm:p-0 max-sm:text-left">
-                                                <div class="inline-flex w-28 items-stretch overflow-hidden rounded-lg border border-gray-200 max-sm:w-32 max-sm:h-9"
+                                                <div x-show="!fullOrder"
+                                                     class="inline-flex w-28 items-stretch overflow-hidden rounded-lg border border-gray-200 max-sm:w-32 max-sm:h-9"
                                                      :class="!canEditQty(row) ? 'opacity-50' : ''">
                                                     <button type="button"
                                                             class="flex w-8 shrink-0 items-center justify-center bg-gray-50 text-[18px] text-gray-900 hover:bg-gray-100 disabled:cursor-not-allowed disabled:hover:bg-gray-50 max-sm:w-10 max-sm:h-9"
@@ -293,6 +304,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                                                             @click="inc(row)"
                                                             aria-label="<?= $escaper->escapeHtmlAttr(__('Increase quantity')) ?>">+</button>
                                                 </div>
+                                                <span x-show="fullOrder && row.eligible" class="text-[16px] text-gray-700" x-text="qtyOf(row.id)"></span>
                                             </td>
                                             <td class="py-4 pl-2 text-right align-middle text-[16px] font-medium text-gray-900 whitespace-nowrap max-sm:col-start-3 max-sm:row-start-2 max-sm:p-0" x-text="formatPrice(qtyOf(row.id) * row.unitPrice)"></td>
                                         </tr>
@@ -307,19 +319,20 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                                                     <div class="mb-3 flex items-center gap-2.5">
                                                         <span aria-hidden="true" class="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-amber-500 text-[14px] font-bold leading-none text-white">?</span>
                                                         <span class="text-[14px] font-semibold leading-snug text-gray-900"
-                                                              x-text="row.sealKind === 'hygiene' ? '<?= $escaper->escapeJs(__('Has the hygiene seal been broken after delivery?')) ?>' : '<?= $escaper->escapeJs(__('Has the original software / media seal been broken after delivery?')) ?>'"></span>
+                                                              x-text="row.sealKind === 'hygiene' ? '<?= $escaper->escapeJs(__('Is the hygiene seal still intact?')) ?>' : '<?= $escaper->escapeJs(__('Is the original software / media seal still intact?')) ?>'"></span>
                                                     </div>
                                                     <label class="mb-2 flex cursor-pointer items-start gap-2.5 rounded border border-gray-200 border-l-[3px] border-l-emerald-500 bg-white px-3.5 py-3 transition-colors has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50">
                                                         <input type="radio" :name="'seal_' + row.id" :checked="sealOf(row.id) === false" @change="setSeal(row, false)" class="mt-0.5 h-[18px] w-[18px] shrink-0 accent-emerald-600">
                                                         <span class="flex-1">
-                                                            <span class="block text-[14px] font-semibold leading-snug text-gray-900"><?= $escaper->escapeHtml(__('No, the seal is intact')) ?></span>
+                                                            <span class="block text-[14px] font-semibold leading-snug text-gray-900"><?= $escaper->escapeHtml(__('Yes — it\'s still sealed')) ?></span>
                                                             <span class="mt-0.5 block text-[12px] leading-snug text-gray-500"><?= $escaper->escapeHtml(__('Refund possible — return the unopened package.')) ?></span>
                                                         </span>
                                                     </label>
+                                                    <?= $block->getChildHtml('seal_photo_control') ?>
                                                     <label class="flex cursor-pointer items-start gap-2.5 rounded border border-gray-200 border-l-[3px] border-l-red-600 bg-white px-3.5 py-3 transition-colors has-[:checked]:border-red-600 has-[:checked]:bg-red-50">
                                                         <input type="radio" :name="'seal_' + row.id" :checked="sealOf(row.id) === true" @change="setSeal(row, true)" class="mt-0.5 h-[18px] w-[18px] shrink-0 accent-red-600">
                                                         <span class="flex-1">
-                                                            <span class="block text-[14px] font-semibold leading-snug text-red-800"><?= $escaper->escapeHtml(__('Yes, the seal is broken')) ?></span>
+                                                            <span class="block text-[14px] font-semibold leading-snug text-red-800"><?= $escaper->escapeHtml(__('No — I\'ve opened it')) ?></span>
                                                             <span class="mt-0.5 block text-[12px] leading-snug text-red-700"
                                                                   x-text="row.sealKind === 'hygiene' ? '<?= $escaper->escapeJs(__('This item cannot be returned (Art. 16(e) Directive 2011/83/EU).')) ?>' : '<?= $escaper->escapeJs(__('This item cannot be returned (Art. 16(i) Directive 2011/83/EU).')) ?>'"></span>
                                                         </span>
@@ -387,6 +400,12 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                         </tbody>
                     </table>
                 </div>
+                <?php if ($isFullOrder): ?>
+                <p class="mt-4 text-sm text-gray-600">
+                    <?= $escaper->escapeHtml(__('This request covers all returnable items of the order.')) ?>
+                    <a class="text-blue-600 hover:underline" href="<?= $escaper->escapeUrl($contactUrl) ?>"><?= $escaper->escapeHtml(__('Contact us for a partial return.')) ?></a>
+                </p>
+                <?php endif; ?>
             </div>
 
             <div class="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3.5 text-[15px] text-blue-900 leading-snug">
@@ -397,9 +416,9 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
 
         <!-- Sidebar: return summary -->
         <aside class="space-y-4">
-            <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm max-sm:p-4">
+            <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm max-sm:border-0 max-sm:rounded-none max-sm:shadow-none max-sm:p-0 max-sm:bg-transparent">
                 <h3 class="text-[20px] font-semibold text-gray-900"><?= $escaper->escapeHtml(__('Return summary')) ?></h3>
-                <template x-if="!hasSelection() && !<?= $noEligibleItems ? 'false' : 'false' ?>">
+                <template x-if="!hasSelection() && !<?= $noEligibleItems ? 'true' : 'false' ?>">
                     <p class="mt-3 text-sm text-gray-600"><?= $escaper->escapeHtml(__('No items selected yet. Use the + button next to an item to add it to your return.')) ?></p>
                 </template>
                 <template x-if="hasSelection()">
@@ -436,7 +455,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
     <!-- Panel 3: review & confirm -->
     <div x-show="step === '3'" x-cloak class="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div class="space-y-6">
-            <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm max-sm:p-5">
+            <div class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm max-sm:border-0 max-sm:rounded-none max-sm:shadow-none max-sm:p-0 max-sm:bg-transparent">
                 <h2 class="text-2xl font-semibold text-gray-900 max-sm:text-[19px]"><?= $escaper->escapeHtml(__('Review and confirm')) ?></h2>
                 <?php if ($orderMeta instanceof \MageMe\EUWithdrawal\Block\Withdraw\OrderMeta): ?>
                     <div class="mt-4 flex items-start gap-2.5 rounded-lg bg-gray-50 px-[18px] py-4">
@@ -469,12 +488,23 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                     </thead>
                     <tbody class="max-sm:block">
                         <template x-for="row in selectedRows()" :key="row.id">
-                            <tr class="border-b border-gray-100 max-sm:grid max-sm:grid-cols-[56px_1fr_auto] max-sm:items-center max-sm:gap-x-3 max-sm:gap-y-1.5 max-sm:rounded-lg max-sm:border max-sm:bg-gray-50 max-sm:p-3 max-sm:mb-3">
+                            <tr class="border-b border-gray-100 max-sm:grid max-sm:grid-cols-[56px_1fr_auto] max-sm:items-center max-sm:gap-x-3 max-sm:gap-y-1.5 max-sm:rounded-lg max-sm:border max-sm:border-gray-200 max-sm:bg-white max-sm:p-3 max-sm:mb-3">
                                 <td class="py-3 pr-2 max-sm:col-start-1 max-sm:row-start-1 max-sm:p-0">
                                     <template x-if="row.thumb"><img :src="row.thumb" :alt="row.name" class="h-12 w-12 rounded object-cover max-sm:h-14 max-sm:w-14"></template>
                                     <template x-if="!row.thumb"><div class="flex h-12 w-12 items-center justify-center rounded bg-gray-100 text-gray-400 max-sm:h-14 max-sm:w-14"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-4 9 4v10l-9 4-9-4z"/><polyline points="3 9 12 13 21 9"/><line x1="12" y1="13" x2="12" y2="22"/></svg></div></template>
                                 </td>
-                                <td class="py-3 pr-2 text-gray-900 max-sm:col-start-2 max-sm:row-start-1 max-sm:p-0 max-sm:font-semibold max-sm:leading-snug" x-text="row.name"></td>
+                                <td class="py-3 pr-2 text-gray-900 max-sm:col-start-2 max-sm:row-start-1 max-sm:p-0 max-sm:font-semibold max-sm:leading-snug">
+                                    <div x-text="row.name"></div>
+                                    <template x-if="photoSummaryMap[row.id] && (photoSummaryMap[row.id].photos.length || photoSummaryMap[row.id].skipped)">
+                                        <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                                            <template x-for="ph in photoSummaryMap[row.id].photos" :key="ph.url">
+                                                <img :src="ph.url" :alt="ph.name" class="h-9 w-9 rounded border border-gray-200 object-cover">
+                                            </template>
+                                            <span x-show="photoSummaryMap[row.id].skipped && !photoSummaryMap[row.id].photos.length"
+                                                  class="text-[11px] text-gray-500"><?= $escaper->escapeHtml(__('Seal photos skipped')) ?></span>
+                                        </div>
+                                    </template>
+                                </td>
                                 <td class="py-3 px-2 text-center text-gray-700 max-sm:col-start-3 max-sm:row-start-1 max-sm:p-0 max-sm:text-right max-sm:before:content-['Qty:_'] max-sm:before:text-gray-500" x-text="qtyOf(row.id)"></td>
                                 <td class="py-3 px-2 text-gray-700 max-sm:col-span-3 max-sm:row-start-2 max-sm:p-0 max-sm:pt-1.5 max-sm:mt-1.5 max-sm:border-t max-sm:border-gray-200 max-sm:text-[13px] max-sm:before:content-['Reason:_'] max-sm:before:font-medium max-sm:before:text-gray-900" x-text="reasonDisplayFor(row.id) || '—'"></td>
                                 <td class="py-3 pl-2 text-right text-gray-900 max-sm:col-span-3 max-sm:row-start-3 max-sm:p-0 max-sm:pt-1 max-sm:font-semibold max-sm:text-[15px]" x-text="formatPrice(qtyOf(row.id) * row.unitPrice)"></td>
@@ -509,7 +539,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
         </div>
 
         <aside>
-            <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm max-sm:p-4">
+            <div class="rounded-xl border border-gray-200 bg-white p-5 shadow-sm max-sm:border-0 max-sm:rounded-none max-sm:shadow-none max-sm:p-0 max-sm:bg-transparent">
                 <h3 class="text-[20px] font-semibold text-gray-900"><?= $escaper->escapeHtml(__('Return summary')) ?></h3>
                 <dl class="mt-3 space-y-2 text-[15px]">
                     <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Subtotal')) ?></dt><dd class="text-gray-900" x-text="formatPrice(subtotal())"></dd></div>
@@ -534,7 +564,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                             class="rounded-lg bg-blue-600 px-5 py-2.5 text-[15px] font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300 max-sm:w-full max-sm:py-3 max-sm:text-[16px]"
                             :disabled="submitting"
                             @click="submit()">
-                        <span x-text="submitting ? '<?= $escaper->escapeJs(__('Submitting…')) ?>' : '<?= $escaper->escapeJs(__('Submit return request')) ?>'"></span>
+                        <span x-text="submitting ? '<?= $escaper->escapeJs(__('Submitting…')) ?>' : '<?= $escaper->escapeJs($confirmLabel) ?>'"></span>
                     </button>
                     <small class="mt-1 text-xs text-red-700 max-sm:text-center" x-show="errorMessage" x-text="errorMessage"></small>
                 </div>
@@ -544,7 +574,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
 
     <!-- Panel 4: submitted -->
     <div x-show="step === '4'" x-cloak class="space-y-6">
-        <div class="grid gap-0 rounded-xl border border-gray-200 bg-white shadow-sm md:grid-cols-[3fr_2fr] md:divide-x md:divide-gray-200">
+        <div class="grid gap-0 rounded-xl border border-gray-200 bg-white shadow-sm max-sm:border-0 max-sm:rounded-none max-sm:shadow-none max-sm:bg-transparent md:grid-cols-[3fr_2fr] md:divide-x md:divide-gray-200">
             <div class="flex flex-col items-center justify-center p-10 text-center max-sm:p-6">
                 <div class="flex h-14 w-14 items-center justify-center rounded-full border-2 border-emerald-200 bg-emerald-50 text-emerald-600">
                     <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 13 9 17 19 7"/></svg>
@@ -611,10 +641,13 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
             step: '2',
             boot: boot,
             items: boot.items || [],
+            fullOrder: boot.fullOrder || false,
             qtyMap: {},        // { itemId: qty }
             reasonMap: {},     // { itemId: { code, codeLabel, text } }
             sealMap: {},       // { itemId: boolean | null }
             preSealQty: {},    // { itemId: int }  qty stashed when "Yes broken" picked, restored on revert to "No intact"
+            photoGateMap: {},  // { itemId: bool } Pro seal-photo gate; key present only while the control is active
+            photoSummaryMap: {}, // { itemId: { photos: [{url,name}], skipped } } echoed onto the review step
             submitted: { rrNumber: '', email: '' },
             errorMessage: '',
             submitting: false,
@@ -622,7 +655,9 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
 
             init() {
                 this.items.forEach(row => {
-                    this.qtyMap[row.id] = 0;
+                    // Full-order mode: seed every eligible row with its full remaining qty.
+                    // Per-item mode: start at 0 (customer selects manually).
+                    this.qtyMap[row.id] = (this.fullOrder && row.eligible) ? (row.remaining || 0) : 0;
                     this.reasonMap[row.id] = { code: '', codeLabel: '', text: '' };
                     this.sealMap[row.id] = null;
                 });
@@ -630,6 +665,24 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                     const hidden = this.$root.querySelector('input[name="form_key"]');
                     if (hidden && hidden.value) this.boot.formKey = hidden.value;
                 }
+                // Pro seal-photo gate: the nested euwSealPhoto component dispatches
+                // mm-eu-w-photo-gate (bubbling) on every photo/skip change. Record
+                // per-item satisfaction so canContinue() can require a photo or an
+                // explicit skip. No event = control inactive (mode=disabled / Pro
+                // absent) = no requirement.
+                this.$root.addEventListener('mm-eu-w-photo-gate', (e) => {
+                    if (e.detail && typeof e.detail.itemId !== 'undefined') {
+                        this.photoGateMap = Object.assign({}, this.photoGateMap, {
+                            [e.detail.itemId]: !!e.detail.satisfied,
+                        });
+                        this.photoSummaryMap = Object.assign({}, this.photoSummaryMap, {
+                            [e.detail.itemId]: {
+                                photos: e.detail.photos || [],
+                                skipped: !!e.detail.skipped,
+                            },
+                        });
+                    }
+                });
                 this.syncStepperStore();
             },
 
@@ -680,11 +733,17 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                     if (cur > 0) this.preSealQty[row.id] = cur;
                     this.qtyMap[row.id] = 0;
                 } else if (opened === false) {
-                    const stashed = this.preSealQty[row.id];
-                    if (stashed && this.qtyOf(row.id) === 0) {
-                        const cap = typeof row.remaining === 'number' && row.remaining > 0 ? row.remaining : stashed;
-                        this.qtyMap[row.id] = Math.min(stashed, cap);
+                    if (this.fullOrder) {
+                        // Full-order mode: always restore to full remaining qty on seal revert.
+                        this.qtyMap[row.id] = row.remaining || 0;
                         delete this.preSealQty[row.id];
+                    } else {
+                        const stashed = this.preSealQty[row.id];
+                        if (stashed && this.qtyOf(row.id) === 0) {
+                            const cap = typeof row.remaining === 'number' && row.remaining > 0 ? row.remaining : stashed;
+                            this.qtyMap[row.id] = Math.min(stashed, cap);
+                            delete this.preSealQty[row.id];
+                        }
                     }
                 }
             },
@@ -828,6 +887,18 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
 
             goToReview() {
                 if (!this.canContinue()) return;
+                // Pro seal-photo gate: Continue is not disabled. If an intact
+                // selected item still has neither a photo nor an explicit skip,
+                // tell the control(s) to highlight, scroll to the first, and stay.
+                const blocked = this.items.find(r =>
+                    this.qtyOf(r.id) > 0 && r.sealKind && this.sealMap[r.id] === false
+                    && this.photoGateMap[r.id] === false);
+                if (blocked) {
+                    this.$dispatch('mm-eu-w-photo-enforce');
+                    const el = this.$root.querySelector('[data-role="seal-extra"][data-item-id="' + blocked.id + '"]');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return;
+                }
                 this.errorMessage = '';
                 this.step = '3';
                 this.syncStepperStore();
@@ -849,10 +920,16 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                     };
                 }
 
+                // Per-item seal-broken declaration — sent so the server enforces
+                // the Art. 16(e)/(i) exclusion itself, not just via client qty-zeroing.
+                const itemSeal = Object.fromEntries(
+                    this.items.filter(r => this.sealMap[r.id] === true).map(r => [String(r.id), 1])
+                );
                 const body = {
                     orderId: this.boot.orderIncrementId || '',
                     items: Object.fromEntries(this.selectedRows().map(r => [String(r.id), this.qtyOf(r.id)])),
                     itemReasons: itemReasons,
+                    itemSeal: itemSeal,
                     formKey: this.boot.formKey || '',
                 };
 
@@ -871,6 +948,14 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                 if (oid) extra.push('order_id=' + encodeURIComponent(oid));
                 if (extra.length) url += (url.indexOf('?') === -1 ? '?' : '&') + extra.join('&');
 
+                const beforeSubmit = new CustomEvent('mm-eu-w:before-submit', { cancelable: true, detail: { body } });
+                if (!document.dispatchEvent(beforeSubmit)) {
+                    if (beforeSubmit.detail.cancelMessage) {
+                        this.errorMessage = beforeSubmit.detail.cancelMessage;
+                    }
+                    this.submitting = false;
+                    return;
+                }
                 try {
                     const resp = await fetch(url, {
                         method: 'POST',

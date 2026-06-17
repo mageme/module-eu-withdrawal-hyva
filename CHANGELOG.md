@@ -1,3 +1,10 @@
+## 1.0.3
+
++ New: Full order selection mode support in the withdrawal form
+- Fix: final confirmation button now renders the legally required "Confirm withdrawal" label in the customer's language instead of "Submit return request"
++ New: Extension points for the Pro photo evidence step on the withdrawal form
+* Other: Mobile layout polish on the withdrawal form (full-bleed cards, tighter spacing)
+
 ## 1.0.2
 
 - Fix: The withdrawal refund summary now reflects order-level discounts and other custom totals.
