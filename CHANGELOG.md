@@ -1,3 +1,7 @@
+## 1.0.4
+
+* Other: Internal cleanup of the withdrawal form's inline-script handling.
+
 ## 1.0.3
 
 + New: Full order selection mode support in the withdrawal form

@@ -24,7 +24,6 @@
  */
 
 /** @var \Hyva\Theme\ViewModel\HyvaCsp $hyvaCsp */
-$hyvaCsp = $viewModels->require(\Hyva\Theme\ViewModel\HyvaCsp::class);
 
 $formKey         = method_exists($block, 'getFormKey') ? $block->getFormKey() : '';
 $finalizeUrl     = $block->getUrl('withdraw-contract/api/finalize');
@@ -1037,4 +1036,4 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
     }, { once: true });
 })();
 </script>
-<?php $hyvaCsp->registerInlineScript() ?>
+<?php isset($hyvaCsp) && $hyvaCsp->registerInlineScript() ?>
