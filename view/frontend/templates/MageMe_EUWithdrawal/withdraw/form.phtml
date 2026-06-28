@@ -62,7 +62,7 @@ $currency     = $orderForMeta !== null ? (string) $orderForMeta->getOrderCurrenc
 // Order-level adjustment preview (payment discount, gift card, custom total):
 // base + gap let Alpine distribute the same order-level adjustment the server
 // applies. Empty for standard orders.
-$orderLevel = $orderForMeta !== null
+$orderLevel = $orderForMeta !== null && method_exists($block, 'getOrderLevelGap')
     ? $block->getOrderLevelGap($orderForMeta)
     : ['base' => 0.0, 'gap' => 0.0];
 

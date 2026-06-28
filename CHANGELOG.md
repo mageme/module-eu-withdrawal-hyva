@@ -1,3 +1,7 @@
+## 1.0.5
+
+- Fix: The withdrawal page no longer errors when running on an older base module version.
+
 ## 1.0.4
 
 * Other: Internal cleanup of the withdrawal form's inline-script handling.
