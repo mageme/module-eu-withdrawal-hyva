@@ -31,11 +31,11 @@ $cardState  = $block->getCardState();
         // Mirrors Luma's `_withdrawals-section.less` palette: info-bg (light blue) for eligible
         // and eligible_pending; bg-subtle (gray) for pending / expired / excluded variants.
         $cardCls = match ($cardState) {
-            'eligible', 'eligible_pending' => 'border-blue-200 bg-blue-50',
+            'eligible', 'eligible_pending' => 'border-primary/30 bg-primary/10',
             default => 'border-gray-200 bg-gray-100',
         };
         $iconColorCls = match ($cardState) {
-            'eligible', 'eligible_pending' => 'text-blue-600',
+            'eligible', 'eligible_pending' => 'text-primary',
             default => 'text-gray-500',
         };
         ?>
@@ -86,7 +86,7 @@ $cardState  = $block->getCardState();
             </div>
             <?php if ($block->shouldShowStartButton()): ?>
                 <div class="mt-4 sm:mt-0 sm:shrink-0">
-                    <a class="inline-flex items-center justify-center rounded-md bg-blue-600 px-[22px] py-[10px] text-[14px] font-semibold leading-snug text-white whitespace-nowrap hover:bg-blue-700"
+                    <a class="inline-flex items-center justify-center rounded-md bg-primary px-[22px] py-[10px] text-[14px] font-semibold leading-snug text-white whitespace-nowrap hover:bg-primary-darker"
                        href="<?= $escaper->escapeUrl($block->getStartUrl()) ?>">
                         <?= $escaper->escapeHtml(__('Start withdrawal')) ?>
                     </a>

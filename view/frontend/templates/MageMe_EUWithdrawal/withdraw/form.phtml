@@ -34,6 +34,7 @@ $homeUrl         = $block->getUrl('');
 $contactUrl      = $block->getUrl('contact');
 $returnPolicyUrl = method_exists($block, 'getReturnPolicyUrl') ? $block->getReturnPolicyUrl() : '';
 $shippingNotice  = method_exists($block, 'getReturnShippingNotice') ? $block->getReturnShippingNotice() : '';
+$blockingReason  = method_exists($block, 'getBlockingReason') ? $block->getBlockingReason() : null;
 
 $orderMeta       = $block->getChildBlock('order_meta');
 $orderIncrement  = $orderMeta instanceof \MageMe\EUWithdrawal\Block\Withdraw\OrderMeta ? $orderMeta->getOrderIncrementId() : '';
@@ -164,6 +165,8 @@ $boot = [
     'eligibleItems'    => (object) $eligibleItems,
     'orderItemsBase'   => round($orderLevel['base'], 4),
     'orderLevelGap'    => round($orderLevel['gap'], 4),
+    'inclTax'          => method_exists($block, 'isInclTaxDisplay') && $block->isInclTaxDisplay(),
+    'hideTax'          => method_exists($block, 'isTaxLineHidden') && $block->isTaxLineHidden(),
     'items'            => $items,
     'reasonsEnabled'   => $reasonsEnabled,
     'otherReasonAllowed' => $otherReasonAllowed,
@@ -182,6 +185,8 @@ $boot = [
 $noEligibleItems = method_exists($block, 'hasAnyEligibleItem') && !$block->hasAnyEligibleItem();
 $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block->isRequestedOrderMismatched();
 ?>
+<?= /* @noEscape */ $block->getLayout()->createBlock(\MageMe\Core\Block\Init::class)
+        ->getInlineCss('Hyva_MageMeEUWithdrawal::css/qty-stepper.css') ?>
 <section class="mm-eu-w-spa max-w-6xl mx-auto px-4 py-6 max-sm:px-0 max-sm:py-4"
          x-data='withdrawalApp(<?= /* @noEscape */ json_encode($boot, JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'
          x-cloak>
@@ -193,7 +198,18 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
         </div>
     <?php endif; ?>
 
-    <!-- Panel 2: select items -->
+    <!-- Panel 2: select items (gated on order-level eligibility) -->
+<?php if ($blockingReason !== null): ?>
+    <div x-show="step === '2'" class="max-w-2xl">
+        <div class="rounded-xl border border-gray-200 bg-white p-7 shadow-sm max-sm:border-0 max-sm:rounded-none max-sm:shadow-none max-sm:p-0 max-sm:bg-transparent">
+            <h2 class="text-[22px] font-semibold text-gray-900 leading-tight max-sm:text-[19px]"><?= $escaper->escapeHtml(__('Withdrawal not available for this order')) ?></h2>
+            <p class="mt-3 rounded-lg bg-primary/10 px-4 py-3 text-[15px] text-gray-700"><?= $escaper->escapeHtml(__('This order is not eligible for withdrawal.')) ?></p>
+            <div class="mt-6">
+                <a href="<?= $escaper->escapeUrl($indexUrl) ?>" class="text-[15px] text-primary hover:underline">&larr; <?= $escaper->escapeHtml(__('Back to order search')) ?></a>
+            </div>
+        </div>
+    </div>
+<?php else: ?>
     <div x-show="step === '2'" class="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div class="space-y-6">
             <div class="rounded-xl border border-gray-200 bg-white p-7 shadow-sm max-sm:border-0 max-sm:rounded-none max-sm:shadow-none max-sm:p-0 max-sm:bg-transparent">
@@ -278,34 +294,34 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                                                     </div>
                                                 </template>
                                             </td>
-                                            <td class="py-4 px-2 text-right align-middle text-[16px] text-gray-700 whitespace-nowrap max-sm:hidden" x-text="formatPrice(row.unitPrice)"></td>
+                                            <td class="py-4 px-2 text-right align-middle text-[16px] text-gray-700 whitespace-nowrap max-sm:hidden" x-text="formatPrice(unitDisplay(row))"></td>
                                             <td class="py-4 px-2 text-center align-middle text-[16px] text-gray-700 max-sm:col-start-3 max-sm:row-start-1 max-sm:p-0 max-sm:text-right max-sm:text-[14px] max-sm:font-semibold max-sm:before:content-['Qty:_'] max-sm:before:text-gray-500 max-sm:before:font-normal" x-text="row.purchased"></td>
                                             <td class="py-4 px-2 text-center align-middle text-[16px] text-gray-700 max-sm:hidden" x-text="row.returned"></td>
                                             <td class="py-4 px-2 text-center align-middle max-sm:col-start-1 max-sm:col-end-3 max-sm:row-start-2 max-sm:p-0 max-sm:text-left">
                                                 <div x-show="!fullOrder"
-                                                     class="inline-flex w-28 items-stretch overflow-hidden rounded-lg border border-gray-200 max-sm:w-32 max-sm:h-9"
+                                                     class="mm-euw-qty inline-flex w-28 items-stretch overflow-hidden rounded-lg border border-gray-200 max-sm:w-32 max-sm:h-9"
                                                      :class="!canEditQty(row) ? 'opacity-50' : ''">
                                                     <button type="button"
-                                                            class="flex w-8 shrink-0 items-center justify-center bg-gray-50 text-[18px] text-gray-900 hover:bg-gray-100 disabled:cursor-not-allowed disabled:hover:bg-gray-50 max-sm:w-10 max-sm:h-9"
+                                                            class="mm-euw-qty__btn flex w-8 shrink-0 items-center justify-center bg-gray-50 text-[18px] text-gray-900 hover:bg-gray-100 disabled:cursor-not-allowed disabled:hover:bg-gray-50 max-sm:w-10 max-sm:h-9"
                                                             :disabled="!canEditQty(row) || (qtyOf(row.id) <= 0)"
                                                             @click="dec(row)"
                                                             aria-label="<?= $escaper->escapeHtmlAttr(__('Decrease quantity')) ?>">−</button>
                                                     <input type="number"
-                                                           class="min-w-0 flex-1 border-0 bg-transparent text-center text-[16px] focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none max-sm:h-9"
+                                                           class="mm-euw-qty__input min-w-0 flex-1 border-0 bg-transparent text-center text-[16px] focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none max-sm:h-9"
                                                            :value="qtyOf(row.id)"
                                                            min="0"
                                                            :max="row.remaining"
                                                            :disabled="!canEditQty(row)"
                                                            @input="setQty(row, parseInt($event.target.value, 10) || 0)">
                                                     <button type="button"
-                                                            class="flex w-8 shrink-0 items-center justify-center bg-gray-50 text-[18px] text-gray-900 hover:bg-gray-100 disabled:cursor-not-allowed disabled:hover:bg-gray-50 max-sm:w-10 max-sm:h-9"
+                                                            class="mm-euw-qty__btn flex w-8 shrink-0 items-center justify-center bg-gray-50 text-[18px] text-gray-900 hover:bg-gray-100 disabled:cursor-not-allowed disabled:hover:bg-gray-50 max-sm:w-10 max-sm:h-9"
                                                             :disabled="!canEditQty(row) || (qtyOf(row.id) >= row.remaining)"
                                                             @click="inc(row)"
                                                             aria-label="<?= $escaper->escapeHtmlAttr(__('Increase quantity')) ?>">+</button>
                                                 </div>
                                                 <span x-show="fullOrder && row.eligible" class="text-[16px] text-gray-700" x-text="qtyOf(row.id)"></span>
                                             </td>
-                                            <td class="py-4 pl-2 text-right align-middle text-[16px] font-medium text-gray-900 whitespace-nowrap max-sm:col-start-3 max-sm:row-start-2 max-sm:p-0" x-text="formatPrice(qtyOf(row.id) * row.unitPrice)"></td>
+                                            <td class="py-4 pl-2 text-right align-middle text-[16px] font-medium text-gray-900 whitespace-nowrap max-sm:col-start-3 max-sm:row-start-2 max-sm:p-0" x-text="formatPrice(lineDisplay(row, qtyOf(row.id)))"></td>
                                         </tr>
 
                                         <!-- Per-item seal question (Art. 16(e)/(i)) -->
@@ -353,7 +369,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                                                     <div class="rounded-md bg-gray-50 px-4 py-3">
                                                         <label :for="'reason-' + row.id" class="block text-sm font-medium text-gray-700"><?= $escaper->escapeHtml(__('Reason for return (optional)')) ?></label>
                                                         <select :id="'reason-' + row.id"
-                                                                class="mt-1 w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500"
+                                                                class="mt-1 w-full rounded-md border-gray-300 text-sm focus:border-primary focus:ring-primary"
                                                                 @change="setReason(row, $event.target.value, $event.target.options[$event.target.selectedIndex].text)">
                                                             <?php foreach ($reasonOptions as $opt): ?>
                                                                 <option value="<?= $escaper->escapeHtmlAttr($opt['value']) ?>"
@@ -364,7 +380,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                                                         </select>
                                                         <?php if ($otherReasonAllowed): ?>
                                                             <textarea x-show="reasonOf(row.id).code === 'other'"
-                                                                      class="mt-2 w-full rounded-md border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500"
+                                                                      class="mt-2 w-full rounded-md border-gray-300 text-sm focus:border-primary focus:ring-primary"
                                                                       rows="2"
                                                                       maxlength="500"
                                                                       :value="reasonOf(row.id).text"
@@ -402,14 +418,14 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                 <?php if ($isFullOrder): ?>
                 <p class="mt-4 text-sm text-gray-600">
                     <?= $escaper->escapeHtml(__('This request covers all returnable items of the order.')) ?>
-                    <a class="text-blue-600 hover:underline" href="<?= $escaper->escapeUrl($contactUrl) ?>"><?= $escaper->escapeHtml(__('Contact us for a partial return.')) ?></a>
+                    <a class="text-primary hover:underline" href="<?= $escaper->escapeUrl($contactUrl) ?>"><?= $escaper->escapeHtml(__('Contact us for a partial return.')) ?></a>
                 </p>
                 <?php endif; ?>
             </div>
 
-            <div class="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3.5 text-[15px] text-blue-900 leading-snug">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="mt-0.5 shrink-0 text-blue-600"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/></svg>
-                <span><?= $escaper->escapeHtml(__('You have 14 days from the day you received your order to withdraw from the contract without giving a reason.')) ?></span>
+            <div class="flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/10 px-4 py-3.5 text-[15px] text-primary-darker leading-snug">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="mt-0.5 shrink-0 text-primary"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/></svg>
+                <span><?= $escaper->escapeHtml(__('You have %1 days from the day you received your order to withdraw from the contract without giving a reason.', $block->getWithdrawalPeriodDays())) ?></span>
             </div>
         </div>
 
@@ -424,8 +440,8 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                     <dl class="mt-3 space-y-2 text-[15px]">
                         <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Subtotal')) ?></dt><dd class="text-gray-900" x-text="formatPrice(subtotal())"></dd></div>
                         <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Shipping & Handling')) ?></dt><dd class="text-gray-900" x-text="formatPrice(shippingRefund())"></dd></div>
-                        <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Tax')) ?></dt><dd class="text-gray-900" x-text="formatPrice(tax())"></dd></div>
-                        <div class="flex justify-between" x-show="Math.abs(orderAdjustment()) >= 0.005"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Order adjustment')) ?></dt><dd class="text-gray-900" x-text="formatPrice(orderAdjustment())"></dd></div>
+                        <div class="flex justify-between" x-show="!hideTax()"><dt :class="incl() ? 'text-xs italic text-gray-400' : 'text-gray-600'" x-text="incl() ? '<?= $escaper->escapeJs(__('Of which VAT')) ?>' : '<?= $escaper->escapeJs(__('VAT')) ?>'"></dt><dd :class="incl() ? 'text-xs italic text-gray-400' : 'text-gray-900'" x-text="formatPrice(tax())"></dd></div>
+                        <div class="flex justify-between" x-show="Math.abs(orderAdjustment()) >= 0.005"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Order Adjustment')) ?></dt><dd class="text-gray-900" x-text="formatPrice(orderAdjustment())"></dd></div>
                         <div class="mt-3 flex justify-between border-t border-gray-200 pt-3 text-[17px] font-bold text-gray-900"><dt><?= $escaper->escapeHtml(__('Total refund')) ?></dt><dd x-text="formatPrice(grandTotal())"></dd></div>
                     </dl>
                 </template>
@@ -442,7 +458,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
             <div class="ml-auto flex flex-wrap items-center gap-3 max-sm:ml-0 max-sm:flex-col max-sm:items-stretch max-sm:w-full">
                 <a href="<?= $escaper->escapeUrl($homeUrl) ?>" class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-[15px] font-semibold text-gray-700 hover:bg-gray-50 max-sm:w-full max-sm:py-3 max-sm:text-[16px] max-sm:text-center"><?= $escaper->escapeHtml(__('Cancel')) ?></a>
                 <button type="button"
-                        class="rounded-lg bg-blue-600 px-5 py-2.5 text-[15px] font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300 max-sm:w-full max-sm:py-3 max-sm:text-[16px]"
+                        class="rounded-lg bg-primary px-5 py-2.5 text-[15px] font-semibold text-white shadow-sm hover:bg-primary-darker disabled:cursor-not-allowed disabled:bg-gray-300 max-sm:w-full max-sm:py-3 max-sm:text-[16px]"
                         :disabled="!canContinue()"
                         @click="goToReview()">
                     <?= $escaper->escapeHtml(__('Continue to review')) ?>
@@ -450,6 +466,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
             </div>
         </div>
     </div>
+<?php endif; ?>
 
     <!-- Panel 3: review & confirm -->
     <div x-show="step === '3'" x-cloak class="grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -506,7 +523,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                                 </td>
                                 <td class="py-3 px-2 text-center text-gray-700 max-sm:col-start-3 max-sm:row-start-1 max-sm:p-0 max-sm:text-right max-sm:before:content-['Qty:_'] max-sm:before:text-gray-500" x-text="qtyOf(row.id)"></td>
                                 <td class="py-3 px-2 text-gray-700 max-sm:col-span-3 max-sm:row-start-2 max-sm:p-0 max-sm:pt-1.5 max-sm:mt-1.5 max-sm:border-t max-sm:border-gray-200 max-sm:text-[13px] max-sm:before:content-['Reason:_'] max-sm:before:font-medium max-sm:before:text-gray-900" x-text="reasonDisplayFor(row.id) || '—'"></td>
-                                <td class="py-3 pl-2 text-right text-gray-900 max-sm:col-span-3 max-sm:row-start-3 max-sm:p-0 max-sm:pt-1 max-sm:font-semibold max-sm:text-[15px]" x-text="formatPrice(qtyOf(row.id) * row.unitPrice)"></td>
+                                <td class="py-3 pl-2 text-right text-gray-900 max-sm:col-span-3 max-sm:row-start-3 max-sm:p-0 max-sm:pt-1 max-sm:font-semibold max-sm:text-[15px]" x-text="formatPrice(lineDisplay(row, qtyOf(row.id)))"></td>
                             </tr>
                         </template>
                     </tbody>
@@ -520,7 +537,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                             <p class="mt-0.5 text-sm text-gray-600"><?= $escaper->escapeHtml($shippingNotice) ?></p>
                         </div>
                         <?php if ($returnPolicyUrl !== ''): ?>
-                            <a href="<?= $escaper->escapeUrl($returnPolicyUrl) ?>" target="_blank" rel="noopener" class="text-sm text-blue-700 hover:underline">
+                            <a href="<?= $escaper->escapeUrl($returnPolicyUrl) ?>" target="_blank" rel="noopener" class="text-sm text-primary-darker hover:underline">
                                 <?= $escaper->escapeHtml(__('View return policy')) ?> →
                             </a>
                         <?php endif; ?>
@@ -543,8 +560,8 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                 <dl class="mt-3 space-y-2 text-[15px]">
                     <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Subtotal')) ?></dt><dd class="text-gray-900" x-text="formatPrice(subtotal())"></dd></div>
                     <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Shipping & Handling')) ?></dt><dd class="text-gray-900" x-text="formatPrice(shippingRefund())"></dd></div>
-                    <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Tax')) ?></dt><dd class="text-gray-900" x-text="formatPrice(tax())"></dd></div>
-                    <div class="flex justify-between" x-show="Math.abs(orderAdjustment()) >= 0.005"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Order adjustment')) ?></dt><dd class="text-gray-900" x-text="formatPrice(orderAdjustment())"></dd></div>
+                    <div class="flex justify-between" x-show="!hideTax()"><dt :class="incl() ? 'text-xs italic text-gray-400' : 'text-gray-600'" x-text="incl() ? '<?= $escaper->escapeJs(__('Of which VAT')) ?>' : '<?= $escaper->escapeJs(__('VAT')) ?>'"></dt><dd :class="incl() ? 'text-xs italic text-gray-400' : 'text-gray-900'" x-text="formatPrice(tax())"></dd></div>
+                    <div class="flex justify-between" x-show="Math.abs(orderAdjustment()) >= 0.005"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Order Adjustment')) ?></dt><dd class="text-gray-900" x-text="formatPrice(orderAdjustment())"></dd></div>
                     <div class="mt-3 flex justify-between border-t border-gray-200 pt-3 text-[17px] font-bold text-gray-900"><dt><?= $escaper->escapeHtml(__('Total refund')) ?></dt><dd x-text="formatPrice(grandTotal())"></dd></div>
                 </dl>
                 <p class="mt-4 flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[15px] leading-snug text-emerald-800">
@@ -560,7 +577,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                 <a href="<?= $escaper->escapeUrl($homeUrl) ?>" class="rounded-lg border border-gray-300 bg-white px-5 py-2.5 text-[15px] font-semibold text-gray-700 hover:bg-gray-50 max-sm:w-full max-sm:py-3 max-sm:text-[16px] max-sm:text-center"><?= $escaper->escapeHtml(__('Cancel')) ?></a>
                 <div class="flex flex-col items-end max-sm:w-full max-sm:items-stretch">
                     <button type="button"
-                            class="rounded-lg bg-blue-600 px-5 py-2.5 text-[15px] font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-gray-300 max-sm:w-full max-sm:py-3 max-sm:text-[16px]"
+                            class="rounded-lg bg-primary px-5 py-2.5 text-[15px] font-semibold text-white shadow-sm hover:bg-primary-darker disabled:cursor-not-allowed disabled:bg-gray-300 max-sm:w-full max-sm:py-3 max-sm:text-[16px]"
                             :disabled="submitting"
                             @click="submit()">
                         <span x-text="submitting ? '<?= $escaper->escapeJs(__('Submitting…')) ?>' : '<?= $escaper->escapeJs($confirmLabel) ?>'"></span>
@@ -587,7 +604,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                     <code class="block text-center font-mono text-[15px] font-semibold leading-5 text-gray-900" x-text="submitted.rrNumber || '#0'"></code>
                     <span x-show="copyFlash" x-cloak class="pointer-events-none absolute right-11 top-1/2 -translate-y-1/2 text-[12px] text-emerald-600"><?= $escaper->escapeHtml(__('Copied!')) ?></span>
                     <button type="button"
-                            class="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex h-6 w-6 items-center justify-center rounded text-gray-500 hover:text-blue-600 transition-colors"
+                            class="absolute right-2.5 top-1/2 -translate-y-1/2 inline-flex h-6 w-6 items-center justify-center rounded text-gray-500 hover:text-primary transition-colors"
                             @click="copyRr()"
                             aria-label="<?= $escaper->escapeHtmlAttr(__('Copy request number')) ?>">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>
@@ -596,7 +613,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
             </div>
             <div class="flex flex-col justify-center p-10 max-sm:p-6">
                 <div class="flex items-start gap-3.5 pb-5">
-                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><polyline points="3 7 12 13 21 7"/></svg>
                     </div>
                     <div class="min-w-0">
@@ -608,7 +625,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                     </div>
                 </div>
                 <div class="flex items-start gap-3.5 border-t border-gray-200 pt-5">
-                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="4" y1="11" x2="20" y2="11"/></svg>
                     </div>
                     <div class="min-w-0">
@@ -625,9 +642,9 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
         </div>
         <div class="flex items-center justify-center gap-3 py-5 text-[14px] text-gray-500 max-sm:flex-col max-sm:gap-2">
             <span><?= $escaper->escapeHtml(__('Need more help?')) ?></span>
-            <a href="<?= $escaper->escapeUrl($orderHistoryUrl) ?>" class="font-medium text-blue-600 hover:underline"><?= $escaper->escapeHtml(__('View my returns')) ?></a>
+            <a href="<?= $escaper->escapeUrl($orderHistoryUrl) ?>" class="font-medium text-primary hover:underline"><?= $escaper->escapeHtml(__('View my returns')) ?></a>
             <span aria-hidden="true" class="text-gray-300 max-sm:hidden">|</span>
-            <a href="<?= $escaper->escapeUrl($contactUrl) ?>" class="font-medium text-blue-600 hover:underline"><?= $escaper->escapeHtml(__('Contact support')) ?></a>
+            <a href="<?= $escaper->escapeUrl($contactUrl) ?>" class="font-medium text-primary hover:underline"><?= $escaper->escapeHtml(__('Contact support')) ?></a>
         </div>
     </div>
 </section>
@@ -793,8 +810,28 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                 return true;
             },
 
-            subtotal() {
+            incl() { return !!this.boot.inclTax; },
+
+            hideTax() { return !!this.boot.hideTax; },
+
+            unitDisplay(row) {
+                const net = Number(row.unitPrice || 0);
+                if (!this.incl()) return net;
+                const ordered = Number(row.qtyOrdered) || 1;
+                return this.roundHalfEven(net + this.roundHalfEven(Number(row.taxAmount || 0) / ordered, 4), 4);
+            },
+
+            lineDisplay(row, qty) {
+                const net = this.roundHalfEven(qty * Number(row.unitPrice || 0), 2);
+                return this.incl() ? this.roundHalfEven(net + this.lineTaxFor(row, qty), 4) : net;
+            },
+
+            itemsNet() {
                 return this.selectedRows().reduce((sum, r) => sum + this.qtyOf(r.id) * r.unitPrice, 0);
+            },
+
+            subtotal() {
+                return this.incl() ? this.roundHalfEven(this.itemsNet() + this.itemTax(), 4) : this.itemsNet();
             },
 
             // Banker's rounding (PHP_ROUND_HALF_EVEN). Required for exact
@@ -822,7 +859,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                 return qty * Number(row.unitTax || 0);
             },
 
-            tax() {
+            itemTax() {
                 let t = 0;
                 for (const r of this.selectedRows()) {
                     t += this.lineTaxFor(r, this.qtyOf(r.id));
@@ -830,28 +867,32 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                 return this.roundHalfEven(t, 4);
             },
 
+            shipNet() { return this.isFullReturn() ? this.roundHalfEven(Number(this.boot.shippingPaid || 0), 4) : 0; },
+            shipTax() { return this.isFullReturn() ? this.roundHalfEven(Number(this.boot.shippingTax || 0), 4) : 0; },
+
+            // Displayed VAT line: full refund VAT (item + shipping). Informational
+            // in incl mode (not added to the total); added in excl mode.
+            tax() { return this.roundHalfEven(this.itemTax() + this.shipTax(), 4); },
+
             shippingRefund() {
-                if (!this.isFullReturn()) return 0;
-                // Shipping refund includes shipping VAT (EU Art. 14(2)).
-                // Mirrors RefundCalculator behaviour since Free 0.12.2.
-                return this.roundHalfEven(
-                    Number(this.boot.shippingPaid || 0) + Number(this.boot.shippingTax || 0),
-                    4,
-                );
+                return this.incl()
+                    ? this.roundHalfEven(this.shipNet() + this.shipTax(), 4)
+                    : this.shipNet();
             },
 
             orderAdjustment() {
-                // Distribute the order-level gap by the returned share,
-                // mirroring RefundCalculator::calculate() on the server.
                 const base = Number(this.boot.orderItemsBase || 0);
                 const gap = Number(this.boot.orderLevelGap || 0);
                 if (Math.abs(gap) <= 0.005 || base <= 0) return 0;
-                return this.roundHalfEven(gap * (this.subtotal() / base), 4);
+                return this.roundHalfEven(gap * (this.itemsNet() / base), 4);
             },
 
             grandTotal() {
+                const adj = this.orderAdjustment();
                 return this.roundHalfEven(
-                    this.subtotal() + this.tax() + this.shippingRefund() + this.orderAdjustment(),
+                    this.incl()
+                        ? this.subtotal() + this.shippingRefund() + adj
+                        : this.subtotal() + this.shippingRefund() + this.tax() + adj,
                     4,
                 );
             },

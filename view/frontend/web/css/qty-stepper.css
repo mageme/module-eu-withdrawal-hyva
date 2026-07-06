@@ -1,0 +1,4 @@
+.mm-euw-qty{display:inline-flex;align-items:stretch;width:112px;box-sizing:border-box}
+.mm-euw-qty__btn{flex:0 0 32px;width:32px}
+.mm-euw-qty__input{flex:1 1 auto;width:48px;min-width:0;box-sizing:border-box}
+@media (max-width:640px){.mm-euw-qty{width:128px}}

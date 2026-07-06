@@ -47,7 +47,7 @@
             <div class="text-sm text-gray-500"><?= $escaper->escapeHtml($block->getShippingMethodLabel($order)) ?></div>
         </div>
         <div class="justify-self-end max-sm:justify-self-stretch">
-            <a class="inline-flex items-center justify-center gap-2 whitespace-nowrap min-w-[140px] rounded-lg border border-blue-600 px-5 py-2.5 text-[15px] font-semibold text-blue-600 hover:bg-blue-600 hover:text-white transition-colors group max-sm:w-full max-sm:py-3 max-sm:text-[16px]" href="<?= $escaper->escapeUrl($block->getStep2Url($order)) ?>">
+            <a class="inline-flex items-center justify-center gap-2 whitespace-nowrap min-w-[140px] rounded-lg border border-primary px-5 py-2.5 text-[15px] font-semibold text-primary hover:bg-primary hover:text-white transition-colors group max-sm:w-full max-sm:py-3 max-sm:text-[16px]" href="<?= $escaper->escapeUrl($block->getStep2Url($order)) ?>">
                 <span><?= $escaper->escapeHtml(__('Select order')) ?></span>
                 <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-0.5"><line x1="3" y1="8" x2="13" y2="8"/><polyline points="8,3 13,8 8,13"/></svg>
             </a>

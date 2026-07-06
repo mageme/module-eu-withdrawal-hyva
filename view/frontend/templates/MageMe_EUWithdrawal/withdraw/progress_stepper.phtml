@@ -48,11 +48,11 @@ $colsClass = match ($total) {
             <li class="relative flex flex-col items-center text-center px-2">
                 <?php if (!$isLast): ?>
                     <span class="absolute top-[18px] left-1/2 w-full h-[2px] z-0 max-sm:top-[14px]"
-                          :class="active() > <?= (int) $n ?> ? 'bg-blue-600' : 'bg-gray-300'"
+                          :class="active() > <?= (int) $n ?> ? 'bg-primary' : 'bg-gray-300'"
                           aria-hidden="true"></span>
                 <?php endif; ?>
                 <span class="relative z-10 inline-flex h-9 w-9 items-center justify-center rounded-full text-[15px] font-semibold mb-2.5 max-sm:h-7 max-sm:w-7 max-sm:text-[12px] max-sm:mb-1.5"
-                      :class="active() >= <?= (int) $n ?> ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-500'"
+                      :class="active() >= <?= (int) $n ?> ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'"
                       aria-hidden="true">
                     <template x-if="active() > <?= (int) $n ?>">
                         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 13 9 17 19 7"/></svg>
@@ -62,7 +62,7 @@ $colsClass = match ($total) {
                     </template>
                 </span>
                 <span class="block text-[15px] font-semibold leading-tight max-sm:text-[11px]"
-                      :class="active() === <?= (int) $n ?> ? 'text-blue-600' : 'text-gray-500'"><?= $escaper->escapeHtml(__($s['title'])) ?></span>
+                      :class="active() === <?= (int) $n ?> ? 'text-primary' : 'text-gray-500'"><?= $escaper->escapeHtml(__($s['title'])) ?></span>
                 <span class="mt-1 block text-[13px] text-gray-500 leading-snug max-sm:hidden"><?= $escaper->escapeHtml(__($s['subtitle'])) ?></span>
             </li>
         <?php endforeach; ?>

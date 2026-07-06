@@ -24,9 +24,9 @@ $orders = $block->getOrders();
         <?php if (empty($orders)): ?>
             <div class="mt-6 rounded-lg bg-gray-50 px-4 py-8 text-center">
                 <p class="text-[15px] text-gray-700">
-                    <?= $escaper->escapeHtml(__("You don't have any orders eligible for withdrawal. The 14-day withdrawal window runs from the day you received your order.")) ?>
+                    <?= $escaper->escapeHtml(__("You don't have any orders eligible for withdrawal. The %1-day withdrawal window runs from the day you received your order.", $block->getWithdrawalPeriodDays())) ?>
                 </p>
-                <a class="mt-4 inline-block text-[15px] font-medium text-blue-600 hover:underline" href="<?= $escaper->escapeUrl($block->getOrderHistoryUrl()) ?>">
+                <a class="mt-4 inline-block text-[15px] font-medium text-primary hover:underline" href="<?= $escaper->escapeUrl($block->getOrderHistoryUrl()) ?>">
                     <?= $escaper->escapeHtml(__('View all my orders')) ?>
                 </a>
             </div>
@@ -53,9 +53,9 @@ $orders = $block->getOrders();
         <?php endif; ?>
     </div>
 
-    <div class="mt-6 flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-4 text-[15px] text-blue-900">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="mt-0.5 shrink-0 text-blue-600"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/></svg>
-        <span><?= $escaper->escapeHtml(__('You have the right to withdraw from your purchase within 14 days of receiving your order, without giving any reason.')) ?></span>
+    <div class="mt-6 flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/10 px-4 py-4 text-[15px] text-primary-darker">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="mt-0.5 shrink-0 text-primary"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/></svg>
+        <span><?= $escaper->escapeHtml(__('You have the right to withdraw from your purchase within %1 days of receiving your order, without giving any reason.', $block->getWithdrawalPeriodDays())) ?></span>
     </div>
 </section>
 <script>

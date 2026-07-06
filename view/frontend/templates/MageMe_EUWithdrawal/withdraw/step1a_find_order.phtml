@@ -45,18 +45,18 @@ $recaptcha = $viewModels->require(ReCaptchaViewModel::class);
             <div>
                 <label for="mm-eu-w-order-id" class="block text-[14px] font-medium text-gray-800"><?= $escaper->escapeHtml(__('Order number')) ?></label>
                 <input id="mm-eu-w-order-id" type="text" name="order_id" required
-                       class="mt-1.5 block w-full rounded-md border-gray-300 text-[15px] shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       class="mt-1.5 block w-full rounded-md border-gray-300 text-[15px] shadow-sm focus:border-primary focus:ring-primary"
                        placeholder="<?= $escaper->escapeHtmlAttr(__('e.g. 12345')) ?>">
                 <p class="mt-1 text-[13px] text-gray-500"><?= $escaper->escapeHtml(__('You can find this in your order confirmation email.')) ?></p>
             </div>
             <div>
                 <label for="mm-eu-w-email" class="block text-[14px] font-medium text-gray-800"><?= $escaper->escapeHtml(__('Email address')) ?></label>
                 <input id="mm-eu-w-email" type="email" name="email" required
-                       class="mt-1.5 block w-full rounded-md border-gray-300 text-[15px] shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       class="mt-1.5 block w-full rounded-md border-gray-300 text-[15px] shadow-sm focus:border-primary focus:ring-primary"
                        placeholder="<?= $escaper->escapeHtmlAttr(__('you@example.com')) ?>">
                 <p class="mt-1 text-[13px] text-gray-500"><?= $escaper->escapeHtml(__('Must match the email used for the order.')) ?></p>
             </div>
-            <button type="submit" class="w-full rounded-lg bg-blue-600 px-5 py-2.5 text-[15px] font-semibold text-white shadow-sm hover:bg-blue-700 max-sm:py-3 max-sm:text-[16px]">
+            <button type="submit" class="w-full rounded-lg bg-primary px-5 py-2.5 text-[15px] font-semibold text-white shadow-sm hover:bg-primary-darker max-sm:py-3 max-sm:text-[16px]">
                 <?= $escaper->escapeHtml(__('Find my order')) ?>
             </button>
             <div class="flex justify-center pt-2">
@@ -66,14 +66,14 @@ $recaptcha = $viewModels->require(ReCaptchaViewModel::class);
         <?= /* @noEscape */ $recaptcha ? $recaptcha->getLegalNoticeHtml('mageme_eu_withdrawal_lookup') : '' ?>
     </div>
 
-    <div class="mt-6 flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-4 text-[15px] text-blue-900">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="mt-0.5 shrink-0 text-blue-600"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/></svg>
-        <span><?= $escaper->escapeHtml(__('You have the right to withdraw from your purchase within 14 days of receiving your order, without giving any reason.')) ?></span>
+    <div class="mt-6 flex items-start gap-3 rounded-lg border border-primary/30 bg-primary/10 px-4 py-4 text-[15px] text-primary-darker">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="mt-0.5 shrink-0 text-primary"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"/></svg>
+        <span><?= $escaper->escapeHtml(__('You have the right to withdraw from your purchase within %1 days of receiving your order, without giving any reason.', $block->getWithdrawalPeriodDays())) ?></span>
     </div>
 
     <p class="mt-4 text-center text-[14px] text-gray-600">
         <?= $escaper->escapeHtml(__('Need help finding your order?')) ?>
-        <a class="ml-1 font-medium text-blue-600 hover:underline" href="<?= $escaper->escapeUrl($block->getSupportUrl()) ?>">
+        <a class="ml-1 font-medium text-primary hover:underline" href="<?= $escaper->escapeUrl($block->getSupportUrl()) ?>">
             <?= $escaper->escapeHtml(__('Contact support')) ?>
         </a>
     </p>

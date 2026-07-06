@@ -1,3 +1,9 @@
+## 1.0.6
+
++ New: The refund summary now shows VAT in line with your store's tax-display setting - gross prices with an "Of which VAT" note, or net prices with an added VAT line.
++ New: The withdrawal form now follows your Hyva theme's accent colour instead of a fixed blue, so it matches your storefront palette.
+- Fix: Orders blocked from withdrawal no longer show their items as returnable on the Hyva storefront.
+
 ## 1.0.5
 
 - Fix: The withdrawal page no longer errors when running on an older base module version.
