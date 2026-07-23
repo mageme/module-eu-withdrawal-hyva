@@ -1,3 +1,9 @@
+## 1.0.8
+
+- Fix: A bundle returned as a single unit now asks whether the seal is intact once for the whole bundle, instead of repeating the question for every sealed part.
+- Fix: When the only item on an order is set aside because its seal was opened, the refund summary no longer shows the "your refund will be issued" note while there is nothing to refund.
+* Other: In whole-order mode, the "this request covers all returnable items / contact us for a partial return" note now sits in a tidy bordered info box instead of loose text under the last item.
+
 ## 1.0.7
 
 + New: Bundle contents are now grouped under the bundle they belong to, each part showing the amount it contributed to the price, instead of appearing as a flat list of unrelated products.
