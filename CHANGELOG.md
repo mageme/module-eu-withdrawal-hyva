@@ -1,3 +1,13 @@
+## 1.0.9
+
++ New: The return summary now lists the items you selected, fully translated and matching the standard theme, and a bundle returned as one item shows what is inside it with the quantity to send back for each part — on the selection step, on the review step and in your order view.
++ New: The confirmation page now repeats what was requested — the items, their quantities and the total refund — matching the standard theme.
++ New: A part of a bundle that is a download or a service is marked "Nothing to send back" instead of a quantity.
+- Fix: When no line of an order can be withdrawn any more, the return summary explains why instead of showing an empty panel.
+* Other: The "Select items to return" heading now reads "Items to return" when there is nothing to pick.
+* Other: A bundle that can only be returned whole no longer shows a price beside each of its parts on the selection step, so nothing suggests a single part could be sent back on its own for that amount.
+* Other: This version uses new Tailwind classes — rebuild your theme's Tailwind bundle after updating, or the return summary will render unstyled.
+
 ## 1.0.8
 
 - Fix: A bundle returned as a single unit now asks whether the seal is intact once for the whole bundle, instead of repeating the question for every sealed part.

@@ -159,7 +159,9 @@ $cardState  = $block->getCardState();
                             <ul>
                                 <?php foreach ($request->items as $item): ?>
                                     <?php $imgUrl = $block->getProductImageUrl((int) $item['order_item_id']); ?>
-                                    <li class="grid grid-cols-[56px_minmax(0,1fr)_60px_140px_80px] items-center gap-3 border-t border-gray-200 py-2.5 text-[13px] text-gray-700 first:border-t-0 first:pt-0">
+                                    <?php // A bundle row is tall; top-align it so the line's own Qty does not
+                                          // centre itself alongside a part's Qty. ?>
+                                    <li class="grid grid-cols-[56px_minmax(0,1fr)_60px_140px_80px] <?= empty($item['contents']) ? 'items-center' : 'items-start' ?> gap-3 border-t border-gray-200 py-2.5 text-[13px] text-gray-700 first:border-t-0 first:pt-0">
                                         <span class="block h-14 w-14 overflow-hidden rounded border border-gray-200 bg-white">
                                             <?php if ($imgUrl !== null): ?>
                                                 <img src="<?= $escaper->escapeUrl($imgUrl) ?>" alt="<?= $escaper->escapeHtmlAttr((string) $item['name']) ?>" class="h-full w-full object-cover"/>
@@ -168,6 +170,23 @@ $cardState  = $block->getCardState();
                                         <span class="min-w-0">
                                             <strong class="block truncate font-semibold leading-snug text-gray-900"><?= $escaper->escapeHtml((string) $item['name']) ?></strong>
                                             <span class="mt-0.5 block text-[11px] text-gray-500"><?= $escaper->escapeHtml(__('SKU')) ?>: <?= $escaper->escapeHtml((string) $item['sku']) ?></span>
+                                            <?php if (!empty($item['contents']) && method_exists($block, 'formatComponentQty')): ?>
+                                                <span class="mt-1.5 block border-l-2 border-gray-200 pl-2.5">
+                                                    <span class="block text-[10px] font-semibold uppercase tracking-wide text-gray-500"><?= $escaper->escapeHtml(__('Included in this bundle')) ?></span>
+                                                    <?php foreach ($item['contents'] as $part): ?>
+                                                        <span class="grid grid-cols-[minmax(0,1fr)_max-content] items-start gap-2">
+                                                            <span class="truncate text-[11px] text-gray-600"><?= $escaper->escapeHtml($part['name']) ?></span>
+                                                            <span class="whitespace-nowrap text-[11px] text-gray-500">
+                                                                <?= $escaper->escapeHtml(
+                                                                    empty($part['physical'])
+                                                                        ? __('Nothing to send back')
+                                                                        : __('Qty %1', $block->formatComponentQty((float) $part['qty']))
+                                                                ) ?>
+                                                            </span>
+                                                        </span>
+                                                    <?php endforeach; ?>
+                                                </span>
+                                            <?php endif; ?>
                                         </span>
                                         <span class="text-center text-[12px] text-gray-500"><?= $escaper->escapeHtml(__('Qty %1', (int) $item['qty'])) ?></span>
                                         <span class="truncate text-[12px] text-gray-500"><?= $escaper->escapeHtml($block->getItemReasonDisplay($item)) ?></span>

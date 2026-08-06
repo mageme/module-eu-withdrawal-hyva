@@ -120,13 +120,12 @@ if ($itemSelectorChild instanceof \MageMe\EUWithdrawal\Block\Withdraw\ItemSelect
                 'thumb' => $childObj !== null ? (string) $itemSelectorChild->getThumbnailUrl($childObj) : '',
                 'name'  => (string) $groupRow->label,
                 'opt'   => (string) $itemSelectorChild->getOptionSummary($childId),
-                // Gross, like every other figure on this screen. The fallback
-                // keeps an older base module working, on its own basis.
-                'price' => $groupRow->priced
-                    ? (method_exists($itemSelectorChild, 'formatItemDisplayPriceGross')
-                        ? (string) $itemSelectorChild->formatItemDisplayPriceGross($childId)
-                        : (string) $itemSelectorChild->formatItemDisplayPrice($childId))
-                    : (string) __('Included'),
+                // How many of this part one bundle holds. Absent on an older base module.
+                'qty' => property_exists($groupRow, 'qtyPerParentUnit') && method_exists($itemSelectorChild, 'formatComponentQty')
+                    ? (string) $itemSelectorChild->formatComponentQty($groupRow->qtyPerParentUnit)
+                    : '',
+                // Absent on an older base module, where every content row is treated as physical.
+                'physical' => !property_exists($groupRow, 'physical') || $groupRow->physical,
                 'sealed' => $groupRow->sealed !== null ? [
                     'childSealId'  => $childId,
                     'kind'         => $groupRow->sealed->kind->questionKind(),
@@ -276,6 +275,15 @@ $boot = [
         ? $block->isVatLineHidden()
         : (method_exists($block, 'isTaxLineHidden') && $block->isTaxLineHidden()),
     'items'            => $items,
+    // What travels back inside each whole-bundle line, with the refund split
+    // already allocated per pickable quantity. Server-computed so the split is
+    // PHP's in both themes; Alpine only looks a row up.
+    'bundleContents'   => (object) (
+        $itemSelectorChild instanceof \MageMe\EUWithdrawal\Block\Withdraw\ItemSelector
+            && method_exists($itemSelectorChild, 'getBundleContentsPreview')
+            ? $itemSelectorChild->getBundleContentsPreview()
+            : []
+    ),
     'reasonsEnabled'   => $reasonsEnabled,
     'otherReasonAllowed' => $otherReasonAllowed,
     'reasonOptions'    => $reasonOptions,
@@ -283,6 +291,11 @@ $boot = [
     'i18n'             => [
         'orderPrefix'        => (string) __('Order #'),
         'qtyPrefix'          => (string) __('Qty: '),
+        'bundleContents'     => (string) __('Included in this bundle'),
+        'qty'                => (string) __('Qty'),
+        'qtyPart'            => (string) __('Qty %1', '%1'),
+        'nothingToSendBack'  => (string) __('Nothing to send back'),
+        'itemsToReturn'      => (string) __('Items to return'),
         'submissionFailed'   => (string) __('Submission failed. Please try again.'),
         'networkError'       => (string) __('Network error. Please try again.'),
         'invalidServerReply' => (string) __('Invalid server response.'),
@@ -292,6 +305,11 @@ $boot = [
 
 $noEligibleItems = method_exists($block, 'hasAnyEligibleItem') && !$block->hasAnyEligibleItem();
 $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block->isRequestedOrderMismatched();
+// "Select items" is only honest when something on the page can actually be
+// picked. In whole-order mode there are no quantity steppers, and an order
+// whose every line is spoken for offers no choice either — both read as a
+// listing, not a selection.
+$isSelectionEditable = !$isFullOrder && !$noEligibleItems;
 ?>
 <?= /* @noEscape */ $block->getLayout()->createBlock(\MageMe\Core\Block\Init::class)
         ->getInlineCss('Hyva_MageMeEUWithdrawal::css/qty-stepper.css') ?>
@@ -321,11 +339,15 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
     <div x-show="step === '2'" class="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div class="space-y-6">
             <div class="rounded-xl border border-gray-200 bg-white p-7 max-sm:border-0 max-sm:rounded-none max-sm:shadow-none max-sm:p-0 max-sm:bg-transparent">
-                <h2 class="text-[22px] font-semibold text-gray-900 leading-tight max-sm:text-[19px]"><?= $escaper->escapeHtml(__('Select items to return')) ?></h2>
+                <h2 class="text-[22px] font-semibold text-gray-900 leading-tight max-sm:text-[19px]">
+                    <?= $escaper->escapeHtml($isSelectionEditable
+                        ? __('Select items to return')
+                        : __('Items to return')) ?>
+                </h2>
                 <p class="mt-2 text-[14px] text-gray-600">
-                    <?= $escaper->escapeHtml($isFullOrder
-                        ? __('Review the items included in your return.')
-                        : __('Choose all items or only some of them. Set the return quantity for each item you want to withdraw.')) ?>
+                    <?= $escaper->escapeHtml($isSelectionEditable
+                        ? __('Choose all items or only some of them. Set the return quantity for each item you want to withdraw.')
+                        : __('Review the items included in your return.')) ?>
                 </p>
 
                 <?php if ($orderMeta instanceof \MageMe\EUWithdrawal\Block\Withdraw\OrderMeta): ?>
@@ -544,10 +566,7 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                                         <template x-if="row.contents.length">
                                             <tr class="max-sm:block">
                                                 <td colspan="7" class="pt-3 pb-3.5 max-sm:block">
-                                                    <div class="flex items-baseline justify-between">
-                                                        <span class="text-[11px] uppercase tracking-wide text-gray-500"><?= $escaper->escapeHtml(__('Included in this bundle')) ?></span>
-                                                        <span class="text-[11px] uppercase tracking-wide text-gray-500"><?= $escaper->escapeHtml(__('Included value')) ?></span>
-                                                    </div>
+                                                    <span class="text-[12px] font-semibold uppercase tracking-wide text-gray-500"><?= $escaper->escapeHtml(__('Included in this bundle')) ?></span>
                                                 </td>
                                             </tr>
                                         </template>
@@ -559,6 +578,11 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                                                             <img :src="child.thumb" :alt="child.name" class="h-10 w-10 shrink-0 rounded border border-gray-200 bg-gray-50 object-cover">
                                                         </template>
                                                         <span class="text-[14px] text-gray-900" x-text="child.name"></span>
+                                                        <span class="text-[12px] text-gray-500 whitespace-nowrap"
+                                                              x-show="child.qty || child.physical === false"
+                                                              x-text="child.physical === false
+                                                                  ? '<?= $escaper->escapeJs(__('Nothing to send back')) ?>'
+                                                                  : '<?= $escaper->escapeJs(__('Qty %1', '%1')) ?>'.replace('%1', child.qty)"></span>
                                                         <template x-if="child.sealed">
                                                             <span class="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700 whitespace-nowrap">
                                                                 <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v5c0 4.4-3 8-7 10-4-2-7-5.6-7-10V6z"/></svg>
@@ -566,7 +590,6 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                                                             </span>
                                                         </template>
                                                         <span class="text-[12px] text-gray-500" x-show="child.opt" x-text="child.opt"></span>
-                                                        <span class="ml-auto text-[13px] text-gray-700 whitespace-nowrap" x-text="child.price"></span>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -601,6 +624,49 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                 </template>
                 <template x-if="!hasSelection() && !anySealBroken() && !<?= $noEligibleItems ? 'true' : 'false' ?>">
                     <p class="mt-3 text-sm text-gray-600"><?= $escaper->escapeHtml(__('No items selected yet. Use the + button next to an item to add it to your return.')) ?></p>
+                </template>
+                <?php if ($noEligibleItems): ?>
+                    <p class="mt-3 text-sm text-gray-600">
+                        <?= $escaper->escapeHtml(__('No items in this order are currently eligible for withdrawal.')) ?>
+                        <?= $escaper->escapeHtml(__('Each line is either already being processed, pending confirmation, or has been fully withdrawn. Check the existing requests section above for status or to cancel.')) ?>
+                    </p>
+                <?php endif; ?>
+                <!-- What is going back. A bundle is one line but several goods,
+                     so its contents are spelled out underneath it. -->
+                <template x-if="hasSelection()">
+                    <div class="mt-3 border-b border-gray-200 pb-3">
+                        <div class="flex items-baseline justify-between gap-3">
+                            <span class="text-[13px] font-medium text-gray-900"><?= $escaper->escapeHtml(__('Items to return')) ?></span>
+                            <?php // Bare count: the heading beside it already names what is
+                                  // being counted, and a number carries no grammatical
+                                  // number of its own to get wrong in 22 languages. ?>
+                            <span class="text-[13px] text-gray-500" x-text="selectedRows().length"></span>
+                        </div>
+                        <ul class="mt-2">
+                            <template x-for="row in selectedRows()" :key="row.id">
+                                <li class="py-2 [&+li]:border-t [&+li]:border-gray-200">
+                                    <div class="flex items-baseline justify-between gap-3">
+                                        <span class="text-[13px] font-semibold text-gray-900" x-text="row.name"></span>
+                                        <span class="text-[13px] font-semibold text-gray-900 whitespace-nowrap" x-text="formatPrice(lineDisplay(row, qtyOf(row.id)))"></span>
+                                    </div>
+                                    <div class="text-[12px] text-gray-500" x-text="'<?= $escaper->escapeJs(__('Qty %1', '%1')) ?>'.replace('%1', qtyOf(row.id))"></div>
+                                    <template x-if="bundleParts(row.id, qtyOf(row.id)).length">
+                                        <div class="mt-1.5 border-l-2 border-gray-200 pl-3">
+                                            <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-500"><?= $escaper->escapeHtml(__('Included in this bundle')) ?></span>
+                                            <ul class="mt-1 space-y-0.5">
+                                                <template x-for="part in bundleParts(row.id, qtyOf(row.id))" :key="part.id">
+                                                    <li class="grid grid-cols-[minmax(0,1fr)_max-content] items-start gap-3">
+                                                        <span class="text-[12px] text-gray-600" x-text="part.name"></span>
+                                                        <span class="text-[12px] text-gray-500 whitespace-nowrap" x-text="part.meta"></span>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                    </template>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
                 </template>
                 <template x-if="hasSelection()">
                     <dl class="mt-3 space-y-2 text-[15px]">
@@ -671,12 +737,25 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                     <tbody class="max-sm:block">
                         <template x-for="row in selectedRows()" :key="row.id">
                             <tr class="border-b border-gray-100 max-sm:grid max-sm:grid-cols-[56px_1fr_auto] max-sm:items-center max-sm:gap-x-3 max-sm:gap-y-1.5 max-sm:rounded-lg max-sm:border max-sm:border-gray-200 max-sm:bg-white max-sm:p-3 max-sm:mb-3">
-                                <td class="py-3 pr-2 max-sm:col-start-1 max-sm:row-start-1 max-sm:p-0">
+                                <td class="py-3 pr-2 align-top max-sm:col-start-1 max-sm:row-start-1 max-sm:p-0">
                                     <template x-if="row.thumb"><img :src="row.thumb" :alt="row.name" class="h-12 w-12 rounded object-cover max-sm:h-14 max-sm:w-14"></template>
                                     <template x-if="!row.thumb"><div class="flex h-12 w-12 items-center justify-center rounded bg-gray-100 text-gray-400 max-sm:h-14 max-sm:w-14"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-4 9 4v10l-9 4-9-4z"/><polyline points="3 9 12 13 21 9"/><line x1="12" y1="13" x2="12" y2="22"/></svg></div></template>
                                 </td>
-                                <td class="py-3 pr-2 text-gray-900 max-sm:col-start-2 max-sm:row-start-1 max-sm:p-0 max-sm:font-semibold max-sm:leading-snug">
+                                <td class="py-3 pr-2 align-top text-gray-900 max-sm:col-start-2 max-sm:row-start-1 max-sm:p-0 max-sm:font-semibold max-sm:leading-snug">
                                     <div x-text="row.name"></div>
+                                    <template x-if="bundleParts(row.id, qtyOf(row.id)).length">
+                                        <div class="mt-1.5 mb-2.5 border-l-2 border-gray-200 pl-3">
+                                            <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-500"><?= $escaper->escapeHtml(__('Included in this bundle')) ?></span>
+                                            <ul class="mt-1 space-y-0.5">
+                                                <template x-for="part in bundleParts(row.id, qtyOf(row.id))" :key="part.id">
+                                                    <li class="grid grid-cols-[minmax(0,1fr)_max-content] items-start gap-3">
+                                                        <span class="text-[12px] text-gray-600" x-text="part.name"></span>
+                                                        <span class="text-[12px] text-gray-500 whitespace-nowrap" x-text="part.meta"></span>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                    </template>
                                     <template x-if="photoSummaryMap[row.id] && (photoSummaryMap[row.id].photos.length || photoSummaryMap[row.id].skipped)">
                                         <div class="mt-1 flex flex-wrap items-center gap-1.5">
                                             <template x-for="ph in photoSummaryMap[row.id].photos" :key="ph.url">
@@ -687,9 +766,9 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                                         </div>
                                     </template>
                                 </td>
-                                <td class="py-3 px-2 text-center text-gray-700 max-sm:col-start-3 max-sm:row-start-1 max-sm:p-0 max-sm:text-right max-sm:before:content-['Qty:_'] max-sm:before:text-gray-500" x-text="qtyOf(row.id)"></td>
-                                <td class="py-3 px-2 text-gray-700 max-sm:col-span-3 max-sm:row-start-2 max-sm:p-0 max-sm:pt-1.5 max-sm:mt-1.5 max-sm:border-t max-sm:border-gray-200 max-sm:text-[13px] max-sm:before:content-['Reason:_'] max-sm:before:font-medium max-sm:before:text-gray-900" x-text="reasonDisplayFor(row.id) || '—'"></td>
-                                <td class="py-3 pl-2 text-right text-gray-900 max-sm:col-span-3 max-sm:row-start-3 max-sm:p-0 max-sm:pt-1 max-sm:font-semibold max-sm:text-[15px]" x-text="formatPrice(lineDisplay(row, qtyOf(row.id)))"></td>
+                                <td class="py-3 px-2 text-center align-top text-gray-700 max-sm:col-start-3 max-sm:row-start-1 max-sm:p-0 max-sm:text-right max-sm:before:content-['Qty:_'] max-sm:before:text-gray-500" x-text="qtyOf(row.id)"></td>
+                                <td class="py-3 px-2 align-top text-gray-700 max-sm:col-span-3 max-sm:row-start-2 max-sm:p-0 max-sm:pt-1.5 max-sm:mt-1.5 max-sm:border-t max-sm:border-gray-200 max-sm:text-[13px] max-sm:before:content-['Reason:_'] max-sm:before:font-medium max-sm:before:text-gray-900" x-text="reasonDisplayFor(row.id) || '—'"></td>
+                                <td class="py-3 pl-2 align-top text-right text-gray-900 max-sm:col-span-3 max-sm:row-start-3 max-sm:p-0 max-sm:pt-1 max-sm:font-semibold max-sm:text-[15px]" x-text="formatPrice(lineDisplay(row, qtyOf(row.id)))"></td>
                             </tr>
                         </template>
                     </tbody>
@@ -806,6 +885,47 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
                 </div>
             </div>
         </div>
+        <div class="rounded-xl border border-gray-200 bg-white p-6 max-sm:border-0 max-sm:rounded-none max-sm:p-0 max-sm:bg-transparent">
+            <h2 class="text-[18px] font-semibold text-gray-900"><?= $escaper->escapeHtml(__('Return summary')) ?></h2>
+            <div class="mt-1 text-[13px] text-gray-500"
+                 x-show="boot.orderIncrementId"
+                 x-text="'<?= $escaper->escapeJs(__('Order #')) ?>' + boot.orderIncrementId"></div>
+            <ul class="mt-3">
+                <template x-for="row in selectedRows()" :key="row.id">
+                    <li class="py-2 [&+li]:border-t [&+li]:border-gray-200">
+                        <div class="flex items-baseline justify-between gap-3">
+                            <span class="text-[14px] font-medium text-gray-900" x-text="row.name"></span>
+                            <span class="text-[14px] font-medium text-gray-900 whitespace-nowrap" x-text="formatPrice(lineDisplay(row, qtyOf(row.id)))"></span>
+                        </div>
+                        <div class="text-[12px] text-gray-500"
+                             x-text="'<?= $escaper->escapeJs(__('Qty %1', '%1')) ?>'.replace('%1', qtyOf(row.id))"></div>
+                        <template x-if="bundleParts(row.id, qtyOf(row.id)).length">
+                            <div class="mt-1.5 border-l-2 border-gray-200 pl-3">
+                                <span class="text-[11px] font-semibold uppercase tracking-wide text-gray-500"><?= $escaper->escapeHtml(__('Included in this bundle')) ?></span>
+                                <ul class="mt-1 space-y-0.5">
+                                    <template x-for="part in bundleParts(row.id, qtyOf(row.id))" :key="part.id">
+                                        <li class="grid grid-cols-[minmax(0,1fr)_max-content] items-start gap-3">
+                                            <span class="text-[12px] text-gray-600" x-text="part.name"></span>
+                                            <span class="text-[12px] text-gray-500 whitespace-nowrap" x-text="part.meta"></span>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </template>
+                    </li>
+                </template>
+            </ul>
+            <dl class="mt-3 space-y-1 border-t border-gray-200 pt-3 text-[14px]">
+                <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Subtotal')) ?></dt><dd class="text-gray-900" x-text="formatPrice(subtotal() + tax())"></dd></div>
+                <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Shipping &amp; Handling')) ?></dt><dd class="text-gray-900" x-text="formatPrice(shippingRefund())"></dd></div>
+                <div class="flex justify-between" x-show="!hideTax()"><dt class="text-xs text-gray-500 pl-3.5"><?= $escaper->escapeHtml(__('Of which VAT')) ?></dt><dd class="text-xs text-gray-500" x-text="formatPrice(tax())"></dd></div>
+            </dl>
+            <div class="mt-3 flex justify-between border-t border-gray-200 pt-3 text-[17px] font-bold text-gray-900">
+                <span><?= $escaper->escapeHtml(__('Total refund')) ?></span>
+                <span x-text="formatPrice(grandTotal())"></span>
+            </div>
+        </div>
+
         <div class="flex items-center justify-center gap-3 py-5 text-[14px] text-gray-500 max-sm:flex-col max-sm:gap-2">
             <span><?= $escaper->escapeHtml(__('Need more help?')) ?></span>
             <a href="<?= $escaper->escapeUrl($orderHistoryUrl) ?>" class="font-medium text-primary hover:underline"><?= $escaper->escapeHtml(__('View my returns')) ?></a>
@@ -1005,6 +1125,34 @@ $mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block
 
             selectedRows() {
                 return this.items.filter(r => this.qtyOf(r.id) > 0);
+            },
+
+            /**
+             * What goes in the parcel for the selected quantity, and how many
+             * of each. No per-part money: the bundle can only be withdrawn
+             * whole, so the one refund figure belongs to the bundle line.
+             * Empty when the line is not a bundle.
+             */
+            bundleParts(rowId, qty) {
+                const entry = (this.boot.bundleContents || {})[String(rowId)];
+                if (!entry || !entry.rows || !entry.rows.length) return [];
+                const label = (this.boot.i18n && this.boot.i18n.qtyPart) || 'Qty %1';
+                const noReturn = (this.boot.i18n && this.boot.i18n.nothingToSendBack) || 'Nothing to send back';
+                return entry.rows.map(row => ({
+                    id: row.order_item_id,
+                    name: row.name,
+                    meta: row.physical === false
+                        ? noReturn
+                        : label.replace('%1', this.formatQty(Number(row.qty_per_unit || 0) * qty)),
+                }));
+            },
+
+            /** Component counts read as counts: "2", not "2.0000". */
+            formatQty(qty) {
+                const n = Number(qty) || 0;
+                return Math.abs(n - Math.round(n)) < 0.0001
+                    ? String(Math.round(n))
+                    : String(Number(n.toFixed(4)));
             },
 
             isFullReturn() {
