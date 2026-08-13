@@ -1,3 +1,9 @@
+## 1.0.10
+
++ New: The steps at the top of the withdrawal page can now be clicked to go back to a step already completed, instead of only the link at the bottom of each step.
+- Fix: On phones the "Qty" and "Reason" labels beside each item now follow the storefront's language instead of always reading in English.
+* Other: This version uses new Tailwind classes — rebuild your theme's Tailwind bundle after updating, or the "Qty" and "Reason" labels on phones disappear and the clickable steps show no highlight on hover.
+
 ## 1.0.9
 
 + New: The return summary now lists the items you selected, fully translated and matching the standard theme, and a bundle returned as one item shows what is inside it with the quantity to send back for each part — on the selection step, on the review step and in your order view.

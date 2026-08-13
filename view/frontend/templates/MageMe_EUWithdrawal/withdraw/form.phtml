@@ -291,6 +291,7 @@ $boot = [
     'i18n'             => [
         'orderPrefix'        => (string) __('Order #'),
         'qtyPrefix'          => (string) __('Qty: '),
+        'reasonPrefix'       => (string) __('Reason: '),
         'bundleContents'     => (string) __('Included in this bundle'),
         'qty'                => (string) __('Qty'),
         'qtyPart'            => (string) __('Qty %1', '%1'),
@@ -315,6 +316,7 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
         ->getInlineCss('Hyva_MageMeEUWithdrawal::css/qty-stepper.css') ?>
 <section class="mm-eu-w-spa max-w-6xl mx-auto px-4 py-6 max-sm:px-0 max-sm:py-4"
          x-data='withdrawalApp(<?= /* @noEscape */ json_encode($boot, JSON_THROW_ON_ERROR | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'
+         @mm-eu-w-goto-step.window="goToStep($event.detail.step)"
          x-cloak>
     <?= $block->getBlockHtml('formkey') ?>
 
@@ -445,7 +447,7 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                                                 </template>
                                             </td>
                                             <td class="py-4 px-2 text-right align-middle text-[16px] text-gray-700 whitespace-nowrap max-sm:hidden" x-text="formatPrice(unitDisplay(row))"></td>
-                                            <td class="py-4 px-2 text-center align-middle text-[16px] text-gray-700 max-sm:col-start-3 max-sm:row-start-1 max-sm:p-0 max-sm:text-right max-sm:text-[14px] max-sm:font-semibold max-sm:before:content-['Qty:_'] max-sm:before:text-gray-500 max-sm:before:font-normal" x-text="row.purchased"></td>
+                                            <td class="py-4 px-2 text-center align-middle text-[16px] text-gray-700 max-sm:col-start-3 max-sm:row-start-1 max-sm:p-0 max-sm:text-right max-sm:text-[14px] max-sm:font-semibold max-sm:before:content-[attr(data-mm-label)] max-sm:before:text-gray-500 max-sm:before:font-normal" :data-mm-label="boot.i18n.qtyPrefix" x-text="row.purchased"></td>
                                             <td class="py-4 px-2 text-center align-middle text-[16px] text-gray-700 max-sm:hidden" x-text="row.returned"></td>
                                             <td class="py-4 px-2 text-center align-middle max-sm:col-start-1 max-sm:col-end-3 max-sm:row-start-2 max-sm:p-0 max-sm:text-left">
                                                 <div x-show="!fullOrder"
@@ -766,8 +768,8 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                                         </div>
                                     </template>
                                 </td>
-                                <td class="py-3 px-2 text-center align-top text-gray-700 max-sm:col-start-3 max-sm:row-start-1 max-sm:p-0 max-sm:text-right max-sm:before:content-['Qty:_'] max-sm:before:text-gray-500" x-text="qtyOf(row.id)"></td>
-                                <td class="py-3 px-2 align-top text-gray-700 max-sm:col-span-3 max-sm:row-start-2 max-sm:p-0 max-sm:pt-1.5 max-sm:mt-1.5 max-sm:border-t max-sm:border-gray-200 max-sm:text-[13px] max-sm:before:content-['Reason:_'] max-sm:before:font-medium max-sm:before:text-gray-900" x-text="reasonDisplayFor(row.id) || '—'"></td>
+                                <td class="py-3 px-2 text-center align-top text-gray-700 max-sm:col-start-3 max-sm:row-start-1 max-sm:p-0 max-sm:text-right max-sm:before:content-[attr(data-mm-label)] max-sm:before:text-gray-500" :data-mm-label="boot.i18n.qtyPrefix" x-text="qtyOf(row.id)"></td>
+                                <td class="py-3 px-2 align-top text-gray-700 max-sm:col-span-3 max-sm:row-start-2 max-sm:p-0 max-sm:pt-1.5 max-sm:mt-1.5 max-sm:border-t max-sm:border-gray-200 max-sm:text-[13px] max-sm:before:content-[attr(data-mm-label)] max-sm:before:font-medium max-sm:before:text-gray-900" :data-mm-label="boot.i18n.reasonPrefix" x-text="reasonDisplayFor(row.id) || '—'"></td>
                                 <td class="py-3 pl-2 align-top text-right text-gray-900 max-sm:col-span-3 max-sm:row-start-3 max-sm:p-0 max-sm:pt-1 max-sm:font-semibold max-sm:text-[15px]" x-text="formatPrice(lineDisplay(row, qtyOf(row.id)))"></td>
                             </tr>
                         </template>
@@ -917,7 +919,7 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
             </ul>
             <dl class="mt-3 space-y-1 border-t border-gray-200 pt-3 text-[14px]">
                 <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Subtotal')) ?></dt><dd class="text-gray-900" x-text="formatPrice(subtotal() + tax())"></dd></div>
-                <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Shipping &amp; Handling')) ?></dt><dd class="text-gray-900" x-text="formatPrice(shippingRefund())"></dd></div>
+                <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Shipping & Handling')) ?></dt><dd class="text-gray-900" x-text="formatPrice(shippingRefund())"></dd></div>
                 <div class="flex justify-between" x-show="!hideTax()"><dt class="text-xs text-gray-500 pl-3.5"><?= $escaper->escapeHtml(__('Of which VAT')) ?></dt><dd class="text-xs text-gray-500" x-text="formatPrice(tax())"></dd></div>
             </dl>
             <div class="mt-3 flex justify-between border-t border-gray-200 pt-3 text-[17px] font-bold text-gray-900">
@@ -996,6 +998,17 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                 if (window.Alpine && Alpine.store('withdrawal')) {
                     Alpine.store('withdrawal').step = parseInt(this.step, 10) || 2;
                 }
+            },
+
+            // Requested from the progress stepper. Only a step already behind the customer is a valid
+            // target, and nothing is once the request has been submitted.
+            goToStep(target) {
+                const to = parseInt(target, 10);
+                const current = parseInt(this.step, 10);
+                if (!to || to >= current || current >= 4) return;
+                this.step = String(to);
+                this.syncStepperStore();
+                window.scrollTo(0, 0);
             },
 
             qtyOf(id) { return this.qtyMap[id] || 0; },

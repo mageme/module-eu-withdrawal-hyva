@@ -14,12 +14,16 @@
  * is not present (Steps 1a/1b — no Alpine store registered), bindings fall
  * back to `serverStep`, which mirrors the layout's `active_step` argument.
  *
+ * A step already behind the customer doubles as the control for going back to it: step 1 links out to the
+ * order-search page, steps 2 and 3 ask the SPA to switch panels through the `mm-eu-w-goto-step` event.
+ *
  * @var \MageMe\EUWithdrawal\Block\Withdraw\ProgressStepper $block
  * @var \Magento\Framework\Escaper $escaper
  */
 $steps      = $block->getSteps();
 $total      = count($steps);
 $serverStep = $block->getActiveStep();
+$searchUrl  = $block->getOrderSearchUrl();
 $colsClass = match ($total) {
     1 => 'grid-cols-1',
     2 => 'grid-cols-2',
@@ -35,8 +39,13 @@ $colsClass = match ($total) {
     12 => 'grid-cols-12',
     default => 'grid-cols-4',
 };
+$submittedStep = 4;
 ?>
-<nav x-data="{ serverStep: <?= (int) $serverStep ?>, active() { return (this.$store.withdrawal && this.$store.withdrawal.step) || this.serverStep; } }"
+<nav x-data="{
+        serverStep: <?= (int) $serverStep ?>,
+        active() { return (this.$store.withdrawal && this.$store.withdrawal.step) || this.serverStep; },
+        navigable(n) { return this.active() > n && this.active() < <?= (int) $submittedStep ?>; }
+     }"
      class="max-w-6xl mx-auto px-4 pt-8 pb-4 max-sm:pt-4 max-sm:pb-3"
      aria-label="<?= $escaper->escapeHtmlAttr(__('Withdrawal progress')) ?>">
     <ol class="grid gap-4 <?= $escaper->escapeHtmlAttr($colsClass) ?>">
@@ -44,26 +53,52 @@ $colsClass = match ($total) {
             <?php
             $n      = (int) $s['number'];
             $isLast = ($idx === $total - 1);
+            $innerClass = 'flex w-full flex-col items-center focus-visible:outline focus-visible:outline-2'
+                . ' focus-visible:outline-offset-4 focus-visible:outline-primary';
             ?>
-            <li class="relative flex flex-col items-center text-center px-2">
+            <li class="relative flex flex-col items-center text-center px-2"
+                :aria-current="active() === <?= (int) $n ?> ? 'step' : null">
                 <?php if (!$isLast): ?>
                     <span class="absolute top-[18px] left-1/2 w-full h-[2px] z-0 max-sm:top-[14px]"
                           :class="active() > <?= (int) $n ?> ? 'bg-primary' : 'bg-gray-300'"
                           aria-hidden="true"></span>
                 <?php endif; ?>
-                <span class="relative z-10 inline-flex h-9 w-9 items-center justify-center rounded-full text-[15px] font-semibold mb-2.5 max-sm:h-7 max-sm:w-7 max-sm:text-[12px] max-sm:mb-1.5"
-                      :class="active() >= <?= (int) $n ?> ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'"
-                      aria-hidden="true">
-                    <template x-if="active() > <?= (int) $n ?>">
-                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 13 9 17 19 7"/></svg>
-                    </template>
-                    <template x-if="active() <= <?= (int) $n ?>">
-                        <span><?= (int) $n ?></span>
-                    </template>
-                </span>
-                <span class="block text-[15px] font-semibold leading-tight max-sm:text-[11px]"
-                      :class="active() === <?= (int) $n ?> ? 'text-primary' : 'text-gray-500'"><?= $escaper->escapeHtml(__($s['title'])) ?></span>
-                <span class="mt-1 block text-[13px] text-gray-500 leading-snug max-sm:hidden"><?= $escaper->escapeHtml(__($s['subtitle'])) ?></span>
+                <?php if ($n === 1): ?>
+                    <a href="<?= $escaper->escapeUrl($searchUrl) ?>"
+                       class="<?= $escaper->escapeHtmlAttr($innerClass) ?>"
+                       :class="navigable(<?= (int) $n ?>) ? 'group cursor-pointer' : 'pointer-events-none'"
+                       :aria-disabled="navigable(<?= (int) $n ?>) ? null : 'true'"
+                       :tabindex="navigable(<?= (int) $n ?>) ? null : '-1'">
+                <?php elseif ($n === $submittedStep): ?>
+                    <span class="<?= $escaper->escapeHtmlAttr($innerClass) ?>">
+                <?php else: ?>
+                    <button type="button"
+                            class="<?= $escaper->escapeHtmlAttr($innerClass) ?>"
+                            :class="navigable(<?= (int) $n ?>) ? 'group cursor-pointer' : ''"
+                            :disabled="!navigable(<?= (int) $n ?>)"
+                            @click="$dispatch('mm-eu-w-goto-step', { step: <?= (int) $n ?> })">
+                <?php endif; ?>
+                    <span class="relative z-10 inline-flex h-9 w-9 items-center justify-center rounded-full text-[15px] font-semibold mb-2.5 max-sm:h-7 max-sm:w-7 max-sm:text-[12px] max-sm:mb-1.5 transition-shadow duration-[120ms] ease-out group-hover:ring-[5px] group-hover:ring-primary/20"
+                          :class="active() >= <?= (int) $n ?> ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500'"
+                          aria-hidden="true">
+                        <template x-if="active() > <?= (int) $n ?>">
+                            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 13 9 17 19 7"/></svg>
+                        </template>
+                        <template x-if="active() <= <?= (int) $n ?>">
+                            <span><?= (int) $n ?></span>
+                        </template>
+                    </span>
+                    <span class="block text-[15px] font-semibold leading-tight max-sm:text-[11px]"
+                          :class="(active() === <?= (int) $n ?> ? 'text-primary' : 'text-gray-500')
+                                  + (navigable(<?= (int) $n ?>) ? ' group-hover:text-gray-700' : '')"><?= $escaper->escapeHtml(__($s['title'])) ?></span>
+                    <span class="mt-1 block text-[13px] text-gray-500 leading-snug max-sm:hidden"><?= $escaper->escapeHtml(__($s['subtitle'])) ?></span>
+                <?php if ($n === 1): ?>
+                    </a>
+                <?php elseif ($n === $submittedStep): ?>
+                    </span>
+                <?php else: ?>
+                    </button>
+                <?php endif; ?>
             </li>
         <?php endforeach; ?>
     </ol>
