@@ -25,7 +25,7 @@
 
 /** @var \Hyva\Theme\ViewModel\HyvaCsp $hyvaCsp */
 
-$formKey         = method_exists($block, 'getFormKey') ? $block->getFormKey() : '';
+$formKey         = $block->getLayout()->createBlock(\Magento\Framework\View\Element\FormKey::class)->getFormKey();
 $finalizeUrl     = $block->getUrl('withdraw-contract/api/finalize');
 $cancelUrl       = method_exists($block, 'getCancelActionUrl') ? $block->getCancelActionUrl() : '';
 $orderHistoryUrl = $block->getUrl('sales/order/history');
@@ -301,11 +301,15 @@ $boot = [
         'networkError'       => (string) __('Network error. Please try again.'),
         'invalidServerReply' => (string) __('Invalid server response.'),
         'copied'             => (string) __('Copied!'),
+        'alreadyReturned'    => (string) __('Already returned.'),
+        'awaitingReview'     => (string) __('Return request awaiting review.'),
+        'awaitingAdmin'      => (string) __('awaiting admin review'),
+        'awaitingConfirm'    => (string) __('awaiting confirmation'),
+        'requestStrip'       => (string) __('Request %1 %2 (%3 item%4).', '%1', '%2', '%3', '%4'),
     ],
 ];
 
 $noEligibleItems = method_exists($block, 'hasAnyEligibleItem') && !$block->hasAnyEligibleItem();
-$mismatched      = method_exists($block, 'isRequestedOrderMismatched') && $block->isRequestedOrderMismatched();
 // "Select items" is only honest when something on the page can actually be
 // picked. In whole-order mode there are no quantity steppers, and an order
 // whose every line is spoken for offers no choice either — both read as a
@@ -319,12 +323,6 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
          @mm-eu-w-goto-step.window="goToStep($event.detail.step)"
          x-cloak>
     <?= $block->getBlockHtml('formkey') ?>
-
-    <?php if ($mismatched): ?>
-        <div role="alert" class="mb-6 rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
-            <?= $escaper->escapeHtml(__('That order does not belong to your account. Please select one of your own orders.')) ?>
-        </div>
-    <?php endif; ?>
 
     <!-- Panel 2: select items (gated on order-level eligibility) -->
 <?php if ($blockingReason !== null): ?>
@@ -966,10 +964,6 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                     this.sealMap[row.id] = null;
                     (row.contents || []).forEach(c => { if (c.sealed) this.sealMap[c.sealed.childSealId] = null; });
                 });
-                if (!this.boot.formKey) {
-                    const hidden = this.$root.querySelector('input[name="form_key"]');
-                    if (hidden && hidden.value) this.boot.formKey = hidden.value;
-                }
                 // Pro seal-photo gate: the nested euwSealPhoto component dispatches
                 // mm-eu-w-photo-gate (bubbling) on every photo/skip change. Record
                 // per-item satisfaction so canContinue() can require a photo or an
@@ -1290,15 +1284,30 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                 return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/></svg>';
             },
 
+            // Hyva rewrites every <input name="form_key"> from the cookie
+            // (hyva.getFormKey), so the DOM value is authoritative at send time
+            // and survives a session change on a long-open page.
+            currentFormKey() {
+                const hidden = this.$root.querySelector('input[name="form_key"]');
+                return (hidden && hidden.value) || this.boot.formKey || '';
+            },
+
             stripText(strip) {
-                if (strip.tone === 'done') return strip.label || (this.boot.i18n && this.boot.i18n.alreadyReturned) || 'Already returned.';
+                const t = this.boot.i18n || {};
+                if (strip.tone === 'done') return strip.label || t.alreadyReturned || 'Already returned.';
                 if (strip.tone === 'pending') {
                     if (strip.requestId) {
                         const id = strip.incrementId || ('#' + strip.requestId);
-                        const status = strip.status === 'pending' ? 'awaiting admin review' : 'awaiting confirmation';
-                        return 'Request ' + id + ' ' + status + ' (' + strip.qty + ' item' + (strip.qty === 1 ? '' : 's') + ').';
+                        const status = strip.status === 'pending'
+                            ? (t.awaitingAdmin || 'awaiting admin review')
+                            : (t.awaitingConfirm || 'awaiting confirmation');
+                        return (t.requestStrip || 'Request %1 %2 (%3 item%4).')
+                            .replace('%1', id)
+                            .replace('%2', status)
+                            .replace('%3', strip.qty)
+                            .replace('%4', strip.qty === 1 ? '' : 's');
                     }
-                    return strip.label || 'Return request awaiting review.';
+                    return strip.label || t.awaitingReview || 'Return request awaiting review.';
                 }
                 return strip.label || '';
             },
@@ -1351,7 +1360,7 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                     items: Object.fromEntries(this.selectedRows().map(r => [String(r.id), this.qtyOf(r.id)])),
                     itemReasons: itemReasons,
                     itemSeal: itemSeal,
-                    formKey: this.boot.formKey || '',
+                    formKey: this.currentFormKey(),
                 };
 
                 // Propagate `?t=` (Pro magic-link) AND `?order_id=` (Free session-
@@ -1385,7 +1394,7 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
                             'X-Requested-With': 'XMLHttpRequest',
-                            'X-Magento-Form-Key': this.boot.formKey || '',
+                            'X-Magento-Form-Key': this.currentFormKey(),
                         },
                         body: JSON.stringify(body),
                     });
@@ -1422,7 +1431,7 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                 if (oid) extra.push('order_id=' + encodeURIComponent(oid));
                 if (extra.length) url += (url.indexOf('?') === -1 ? '?' : '&') + extra.join('&');
                 const body = new FormData();
-                body.append('form_key', this.boot.formKey || '');
+                body.append('form_key', this.currentFormKey());
                 body.append('request_id', String(requestId));
                 try {
                     await fetch(url, { method: 'POST', body, credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' }, redirect: 'follow' });

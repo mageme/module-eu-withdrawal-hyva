@@ -1,3 +1,8 @@
+## 1.0.11
+
+- Fix: On a theme still built with the previous Tailwind generation the withdrawal pages rendered unstyled, because this module's templates were left out when the theme's bundle was built.
+- Fix: The note beside an item that is already covered by a pending request now follows the storefront's language instead of always reading in English.
+
 ## 1.0.10
 
 + New: The steps at the top of the withdrawal page can now be clicked to go back to a step already completed, instead of only the link at the bottom of each step.
