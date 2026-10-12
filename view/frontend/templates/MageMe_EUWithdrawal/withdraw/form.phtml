@@ -916,9 +916,10 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                 </template>
             </ul>
             <dl class="mt-3 space-y-1 border-t border-gray-200 pt-3 text-[14px]">
-                <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Subtotal')) ?></dt><dd class="text-gray-900" x-text="formatPrice(subtotal() + tax())"></dd></div>
+                <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Subtotal')) ?></dt><dd class="text-gray-900" x-text="formatPrice(subtotal())"></dd></div>
                 <div class="flex justify-between"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Shipping & Handling')) ?></dt><dd class="text-gray-900" x-text="formatPrice(shippingRefund())"></dd></div>
                 <div class="flex justify-between" x-show="!hideTax()"><dt class="text-xs text-gray-500 pl-3.5"><?= $escaper->escapeHtml(__('Of which VAT')) ?></dt><dd class="text-xs text-gray-500" x-text="formatPrice(tax())"></dd></div>
+                <div class="flex justify-between" x-show="Math.abs(orderAdjustment()) >= 0.005"><dt class="text-gray-600"><?= $escaper->escapeHtml(__('Order Adjustment')) ?></dt><dd class="text-gray-900" x-text="formatPrice(orderAdjustment())"></dd></div>
             </dl>
             <div class="mt-3 flex justify-between border-t border-gray-200 pt-3 text-[17px] font-bold text-gray-900">
                 <span><?= $escaper->escapeHtml(__('Total refund')) ?></span>

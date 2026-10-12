@@ -1,3 +1,7 @@
+## 1.0.12
+
+- Fix: The return summary shown after a withdrawal is submitted now matches the review step: the Subtotal no longer adds the VAT a second time, and an order-level adjustment is listed on its own line.
+
 ## 1.0.11
 
 - Fix: On a theme still built with the previous Tailwind generation the withdrawal pages rendered unstyled, because this module's templates were left out when the theme's bundle was built.
