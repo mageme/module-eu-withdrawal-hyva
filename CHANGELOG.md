@@ -1,3 +1,13 @@
+## 1.1.0
+
++ New: Customers see the name and email address the withdrawal is filed under before confirming.
++ New: The order lookup tells guests the receipt goes to the email they enter.
+- Fix: The confirmation and review steps show the legal deadlines; the prepaid label and "5–7 business days" are gone.
+- Fix: The "View return policy" link shows even when the Return Shipping Notice is empty.
+- Fix: Confirming after adding a seal photo no longer fails with "Invalid form key".
+* Change: If you translated the old confirmation texts yourself, translate the new ones.
+* Change: Requires EU Withdrawal 1.2.0.
+
 ## 1.0.12
 
 - Fix: The return summary shown after a withdrawal is submitted now matches the review step: the Subtotal no longer adds the VAT a second time, and an order-level adjustment is listed on its own line.

@@ -1,140 +1,571 @@
-END USER LICENSE AGREEMENT
+END-USER LICENSE AGREEMENT
 
-This End-User License Agreement (hereinafter "License") is a legal agreement between you, the legal
-entity or private person who is being licensed to use the Software (hereinafter “Customer”), and ACTEK d.o.o.,
-a private limited liability company registered under the laws of the Republic of Slovenia with business id
-6515665000 (hereinafter "MageMe"). The License applies to all products/software/scripts/services
-(hereinafter "Software") you obtain from MageMe.
+Effective from: 28 October 2026
 
-The License comes into legal force when the Customer installs, copies, or otherwise uses the
-Software. If you do not agree to the terms of this License, you are not allowed to install or use the Software.
+This End-User License Agreement ("Agreement") is between ACTEK d.o.o., a private limited liability
+company registered in the Republic of Slovenia, business ID 6515665000, Bergantova ulica 4, 1000
+Ljubljana, Slovenia, email support@mageme.com ("MageMe", "we"), and the Customer. It applies to all
+MageMe extensions, modules, scripts and related files ("Software") and to the license, download and
+support services described in this Agreement. Custom development, integration and other services are
+provided only under a separate written agreement.
 
+When you order a license, you accept this Agreement with a required checkbox; MageMe records the
+accepted version, the time and the order. For a free product obtained without an order, you accept
+this Agreement by installing or using the product; the Agreement is delivered with the package and
+linked from the product page. A Generation Upgrade is accepted separately, as described in section
+3.6. The person who places an order or accepts a Generation Upgrade confirms that they are
+authorized to bind the Customer. Unless you have accepted this Agreement and hold a valid license,
+you have no right to install or use the Software.
 
-1. LICENSE
+Contract documents. The contract documents are: the version of this Agreement, the Support Policy
+and the Refund Policy displayed or linked before acceptance; the order confirmation; and the
+supported platform versions listed in the compatibility section of the product page for the ordered
+Software at the time of the order (the "compatibility specification"); statements about versions
+released later are not part of it. MageMe makes these documents available with the order
+confirmation. The order confirmation prevails over this Agreement only as to the product, edition,
+quantity, price, licensed Production Installation and Plan term. The Support Policy and the Refund
+Policy apply as far as they do not conflict with this Agreement. The website Terms of Service govern
+the use of the website only and do not change a Software license. Terms in a purchase order,
+procurement portal or other Customer document do not apply unless MageMe accepts them in writing.
 
-    1. MageMe grants you non-exclusive and non-transferable license to use the Software without the
-    rights to sublicense and only as further stipulated under this License. The Customer shall be entitled
-    only to those rights with respect to the Software that are expressly granted under this License.
+Statements outside the contract documents. For Business Customers, other product-page content,
+documentation, marketing materials and other statements are informational and do not create
+warranties or contractual obligations, except where this Agreement expressly refers to them
+(sections 1.9, 3.3, 3.5 and 8.2) or MageMe expressly designates a statement as a warranty in
+writing. This does not exclude liability for intentional conduct, gross negligence or deliberate
+concealment. For Consumers, public statements and pre-contract information have the effect given to
+them by mandatory law.
 
-    2. The Software can have one of the following license types:
+1. DEFINITIONS
 
-        1. Production license. This license type allows Software usage on a single Magento production instance.
+1. License — the right to use the Software granted under this Agreement.
 
-        2. Development license. The license type allows the Software to be activated on a development Magento
-        instance for testing purposes. This license doesn't authorise usage on production websites.
+2. Customer, you — the legal entity or natural person identified in the order as the buyer, or the
+   person to whom a license has been transferred under section 5. For free Software obtained without
+   an order, Customer means the person or legal entity that installs or uses the Software. A MageMe
+   account is the means through which the Customer acts; actions in the account are attributed to
+   the Customer under section 3.6.
 
-    3. The Customer should purchase the License before the Software is downloaded.
+3. Consumer — a natural person who acts for purposes outside their trade, business, craft or
+   profession. Business Customer — every other Customer. A natural person who buys a license for a
+   store that is run as a business is a Business Customer unless the business purpose of the
+   purchase is so limited that it is not predominant. This Agreement applies to every Customer; a
+   provision marked for Business Customers or for Consumers applies only to them, and mandatory
+   consumer law prevails where it cannot be excluded.
 
-    4. The License rights shall take effect after the License is purchased from MageMe and the
-    respective Software is downloaded, but in case of free products - after the Software is downloaded.
+4. Production Installation — one live Magento installation: one Magento application using one main
+   database, including all its websites, stores, store views and domains and any frontends that read
+   from or write to it. All servers that together run one installation count as one installation. An
+   installation is live if real customers can use it, publicly, behind a login or through an API, or
+   if it processes real orders. A copy of an installation is a separate Production Installation if
+   the copy is live. A separate main database is a separate Production Installation, even if it
+   shares servers or code. An installation that runs stores for several businesses that are not
+   under common control (majority ownership or voting rights), for example a SaaS or multi-tenant
+   platform, needs one Production License per business.
 
+5. Production License — a paid license for one Production Installation. A Production License is
+   active unless it is suspended or terminated.
 
-2. COPYRIGHT
+6. Development License — a free license for testing and development only. MageMe decides how many it
+   issues, may refuse a Development License, and may revoke it immediately for breach, misuse, a
+   security or legal risk, discontinuation of the product, or if the Production License it was
+   issued for ends or is transferred. Mandatory rights of Consumers remain unaffected.
 
-    1. The Software contains proprietary copyrighted material. It is prohibited for the Customer to
-    create any derivative works or other works that are based upon or derived from the Software in whole
-    or any part of it for commercial or non-commercial distribution purposes, without written permission
-    from MageMe. MageMe retains all right, title, and interest in and to the Software, related
-    documentation and upgrades. All rights not expressly granted by this License are reserved for
-    MageMe. The Customer recognizes that the Software and its components are protected by copyright and
-    other applicable laws.
+7. Support & Update Plan ("Plan") — the period during which you may obtain new versions of the
+   Software and request support. The Plan starts on the order date and is active until its end date
+   unless it is suspended. The first year of the Plan is included in the purchase. The Plan can be
+   renewed at the prices and on the terms MageMe offers at the time of renewal.
 
+8. Covered Version — a version of the licensed product and edition that MageMe has designated as
+   generally available, within the Generation the license covers (section 3.5), and that MageMe
+   released on or before the last day of your Plan. Pre-release builds are Covered Versions only
+   where MageMe says so in writing.
 
-3. RESTRICTIONS
+9. Generation — a product line that MageMe designates as a separate generation on the product page
+   before it is released. A change of the major version number alone does not make a release a
+   Generation.
 
-    1. The copy of the Software created or transferred pursuant to this License is licensed, not
-    sold, and the Customer receives no title to or ownership of any copy or of the Software itself.
-    Furthermore, the Customer receives no rights to the Software other than those specifically granted
-    in the License.
+10. Support Policy — the support scope and channels published on the support page at the time your
+   Plan starts or is renewed. Refund Policy — the refund conditions published at
+   https://mageme.com/refund-policy at the time of your order.
 
-    2. The Customer is not permitted to:
+11. Repository — MageMe's download service for Software packages. Store address — the public web
+   address of the installation that the Software reports.
 
-        1. modify or create derivative works from the Software, except when it is done for personal use
-        or for uses permitted by the aforementioned license types
+12. Activation — entering your license key in the Software so that MageMe's license server can
+   verify the license.
 
-        2. give, sell, distribute, sub-license, rent, lease or lend any portion of the Software to anyone
+2. LICENSE GRANT
 
-        3. use the Software on Magento editions other than it was specified during purchase
+1. MageMe grants you a non-exclusive license, without time limit, to use each Covered Version of the
+   Software on the licensed Production Installation, subject to sections 4, 11 and 14 and the rest
+   of this Agreement.
 
-        4. place the Software in whole or partially on a server so that its source code (except
-        stylesheet, javascript and images) is accessible for viewing, copying or downloading via a public
-        network such as the Internet, including, to place the Software in publicly accessible repositories
-        (e.g. free Github account)
+2. You may also use the Software on non-public staging, testing and development copies of the
+   licensed Production Installation. These copies must not serve another project or client.
 
-        5. remove any Software identification, proprietary, copyright or other notices contained in the
-        Software
+3. You may move a Production License to a new Production Installation, for example when you migrate
+   the store to new hosting or rebuild it. Deactivate the license on the old installation before
+   activating it on the new one. The old installation may keep the Software only for the time
+   technically necessary to complete the migration, at most 30 days, and must not be operated as a
+   second live installation.
 
-    3. If MageMe discovers unauthorized use, reproduction, distribution, or other exploitation of the
-    Software, the Customer is liable to:
+4. A Development License may be used only on non-production installations and never on a live
+   installation. A Development License covers a version of a Generation only if the same Customer
+   holds an active Production License of the same product and edition that has received the
+   Generation Upgrade to that Generation (section 3.5) and covers that version.
 
-        1. reimburse MageMe for the License costs for each unauthorized use case, reproduction, distribution, or
-        other exploitation of the Software contradictory to this License. For instance, if the Software is
-        installed on more than one production website, than the License cost shall be paid for each such additional
-        website.
+5. Free products. For a product that MageMe offers free of charge, MageMe grants you a non-exclusive
+   license, without time limit, to use every version of that product that MageMe makes available
+   free of charge on any number of installations, subject to this Agreement. Every such version is a
+   Covered Version for a free product. No Plan, support or voluntary warranty is included, and
+   MageMe may stop distributing or developing a free product at any time. Mandatory rights of
+   Consumers remain unaffected.
 
-        OR
+6. You may modify the Software for the licensed installation and may let a contractor do this on
+   your behalf; a contractor receives no rights of its own and may use the Software only for your
+   licensed installation while working for you. No modification transfers or limits MageMe's rights
+   in the Software; you keep the rights you lawfully own in your original additions, and MageMe has
+   no obligation to support modified Software.
 
-        2. reimburse a contractual penalty in the amount of EUR 1,000 for each unauthorized use case, reproduction,
-        distribution, or other exploitation of the Software contradictory to this License and compensate MageMe in
-        respect of any other costs or damages.
+7. MageMe and its licensors keep all intellectual property and other rights in the Software,
+   documentation, license keys and updates. All rights not expressly granted in this Agreement are
+   reserved. The Software is licensed, not sold. If you send MageMe suggestions or feedback, you
+   confirm that you may do so and grant MageMe a perpetual, irrevocable, worldwide, transferable,
+   royalty-free license to use and exploit it without restriction or attribution.
 
+3. SUPPORT & UPDATE PLAN AND VERSIONS
 
-4. WARRANTY
+1. While your Plan is active you may download and use the generally available versions that MageMe
+   makes available for your product, edition and Generation during the Plan, and you may request
+   support within the Support Policy. For Business Customers, MageMe has no obligation to issue any
+   particular release, feature or compatibility update, and a new version may change or remove
+   features. Consumers keep their mandatory right to updates required for conformity. Nothing in
+   this Agreement limits obligations to provide security updates, handle vulnerabilities or make
+   notifications that mandatory law imposes on MageMe; those obligations are independent of the
+   Plan.
 
-    1. To the extent permitted by applicable law, the Software is provided to the Customer "AS IS"
-    without any warranty, either express or implied, that the Software usage will be uninterrupted and
-    that all errors have been or can be eliminated from the Software or in respect usability of
-    fitness for a particular purpose. The sole liability of MageMe (and the exclusive remedy of the
-    Customer) for any breach of this warranty shall be, in sole discretion of MageMe, to use
-    commercially reasonable efforts to provide the Customer with an error correction or workaround which
-    corrects the reported nonconformity, to provide the Software upgrades and errors correction for the
-    upcoming Software release or service pack. Or if MageMe determines such remedies to be impracticable
-    within a reasonable period of time, to terminate the License and refund the License cost.
+2. When the Plan ends, you keep a license without time limit to continue using every Covered
+   Version. The end of the Plan ends new versions and support; it does not end the License.
+   Reinstallation and activation on a new installation require access to MageMe's license server,
+   and MageMe does not guarantee that activation services remain available indefinitely (section
+   14.2). Keep your own copies of the Software packages and license keys; MageMe may, but is not
+   obliged to, keep earlier versions available in the Repository.
 
-    2. The limited warranty provided under the License shall not apply and MageMe shall have no liability
-    to warranty claims arising out of or relating to:
+3. Versions released after your Plan ended are not covered. To use them you need to renew the Plan.
+   MageMe may offer a grace period and a reduced renewal price; both are shown at checkout at the
+   time of renewal and may be changed or withdrawn for future renewals. A renewal made within the
+   grace period continues from the previous end date; a renewal made later starts on the renewal
+   date.
 
-        1. a modification of the Software made by anyone other than MageMe
+4. The release date of each version is the date recorded in the Repository or, where the Repository
+   has no date, in the changelog. These records may be submitted as evidence of the release date.
 
-        2. defects in the Software due to accident, abuse or improper use by the Customer
+5. Generation Upgrade. A new Generation becomes available to an existing Production License only
+   after the Customer accepts this Agreement for that license (a "Generation Upgrade"). The license
+   key stays the same. Until the Generation Upgrade is accepted, the license covers only the earlier
+   Generation. MageMe may offer a Generation Upgrade free of charge to some licenses, on the
+   conditions it states on the product page at that time; those conditions are part of this
+   Agreement for that Generation. MageMe may change or withdraw such an offer for licenses that have
+   not yet accepted it. Pre-release builds included in such an offer are provided for testing only,
+   may contain defects, are not supported and are not intended for live installations. Whether a
+   Generation Upgrade requires a renewal is stated on the product page and in the Customer's account
+   before acceptance.
 
-        3. the Software provided on a no charge or non-commercial trial use basis, if any
+6. Accepting a Generation Upgrade. A Generation Upgrade is accepted in the Customer's MageMe account
+   or, where MageMe offers it, in the admin area of an installation where the license is activated.
+   When a Generation Upgrade requires a renewal, access to the new Generation stays pending until
+   the renewal is paid. An acceptance binds the Customer if it is made by a person with actual
+   authority, by a person whose authority MageMe reasonably inferred from the Customer's own
+   statements or conduct, or if the Customer later ratifies it; use of credentials or an
+   installation under the Customer's control is evidence of authority. MageMe records the acceptance
+   together with the data described in the Privacy Policy. The accepted text is available in the
+   Customer's account while the account exists; MageMe keeps the record for the applicable
+   limitation period. The accepted version of this Agreement governs the license from then on.
+   Accepting a Generation Upgrade does not waive or reduce the use rights you already hold in
+   Covered Versions of the earlier Generation.
 
-        4. the Software being incompatible with the Customer’s other hardware or software
+7. Downloads. Packages can be downloaded from the Repository while your Plan is active. When the
+   Plan ends, you keep the copies you have already downloaded and your installed Covered Versions
+   keep working under section 3.2; to download a package again, renew the Plan. A Consumer may
+   download again at any time the Covered Versions already obtained.
 
+4. ACTIVATION AND LICENSE VERIFICATION
 
-5. LIABILITY LIMITATIONS
+1. The Software may require activation and may periodically contact MageMe's license server to
+   verify the license. MageMe may change the activation and verification methods, including for
+   versions already released, for security, legal, anti-abuse or technical reasons. MageMe will not
+   disable an already activated Covered Version solely because the Plan has ended.
 
-    1. In no event (including, without limitation, in the event of negligence) will MageMe, its
-    employees or associates be liable for any consequential, incidental or indirect damages whatsoever (including,
-    without limitation, damages for loss of profits, loss of use, business interruption, loss of
-    information or data, pecuniary loss), in connection with or arising out of or related to this
-    License, the Software or the use or inability to use the Software. MageMe shall not be
-    liable for any prosecution arising from use of the Software against law or for any illegal use.
+2. If the license is not activated, if the installed version is not a Covered Version, or if the
+   license is suspended or terminated, MageMe may limit functions of the Software to the extent
+   reasonably necessary to enforce this Agreement. Non-excludable rights of Consumers to retrieve
+   their content remain unaffected.
 
-    2. The aggregate liability of MageMe under or in relation to this License, without exceptions, is
-    limited to the amount paid by the Customer to MageMe under this License for the respective License type.
+3. MageMe does not warrant uninterrupted verification or operation without a connection to the
+   license server. Temporary unavailability of the license server may delay verification. Section
+   14.2 applies if the license server is discontinued.
 
+4. During activation and verification the Software sends MageMe the data described in the Privacy
+   Policy (https://mageme.com/privacy-policy), and MageMe records requests to the Repository. MageMe
+   uses this data to verify licenses, provide support, secure its services, prevent and investigate
+   misuse, meet legal obligations and establish or defend legal claims, for the periods stated in
+   the Privacy Policy. You must not block, alter or falsify this data.
 
-6. AMENDMENTS TO THIS AGREEMENT
+5. You are responsible for safeguarding your account credentials and license keys and must notify
+   MageMe promptly of a suspected compromise, unauthorized activation or unauthorized transfer.
 
-    1. MageMe reserves the right to change this License and alter its clauses at
-    any given time. The continued use of the Software by the Customer after the changes have been
-    published by MageMe will constitute the acceptance by the Customer of the changed terms.
+5. AGENCIES AND LICENSE TRANSFER
 
+1. An agency or developer may buy a Production License in its own name for later transfer to a
+   client; it is then the Customer until the transfer. Or it may place the order as the client's
+   authorized representative, naming the client as the buyer; the client is then the Customer from
+   the start. An agency or developer that bought a Production License for a client's installation
+   must transfer that license to the client under section 5.2 when the client asks for it after the
+   agency's work for the client has ended, unless the client agrees otherwise in writing; until then
+   the agency remains responsible under section 5.4.
 
-7. TERMINATION
+2. Contractual transfer. A Production License may be transferred to another person through the
+   transfer function of the MageMe account or by request to MageMe support. A contractual transfer
+   requires that the whole license and any unexpired Plan rights are transferred together, that
+   nothing is unpaid for that license, that the receiving Customer accepts this Agreement, and that
+   the transferring Customer stops using the Software under that license on its own behalf and makes
+   its copies unusable, except that it may continue as the new Customer's contractor under section
+   2.6. MageMe may refuse a contractual transfer that does not meet these conditions or that it
+   reasonably considers fraudulent, and may ask for evidence. A completed transfer under this
+   section 5 is final, except to correct a mistake or fraud. MageMe is not a party to the
+   arrangement between the transferring and the receiving Customer and does not resolve disputes
+   between them.
 
-    1. MageMe may terminate this License for any reason or no reason in its sole discretion. Any
-    failure to comply with the terms and conditions of this License will result in automatic and
-    immediate termination of the License in which case the Customer shall immediately cease use of the
-    Software and destroy all copies of the Software supplied under this License. Such termination
-    shall not oblige MageMe to return any amounts received from the Customer pursuant to the License.
-    The financial obligations incurred by the Customer shall survive the expiration or termination of
-    the License.
+3. Transfer under mandatory law. Where mandatory exhaustion law permits the resale of a Software
+   copy with its unlimited use right, MageMe's consent is not required. In that case the license
+   must be transferred as an indivisible whole, the transferor must make every copy in its
+   possession unusable at the time of transfer, and the acquirer must provide reasonable evidence of
+   lawful acquisition on request. Plan rights transfer only if the parties transfer them. The
+   acquirer is bound by the restrictions of this Agreement that apply to the use of the Software.
 
+4. The Customer is responsible for use of the Software by its employees, agencies, contractors and
+   store operators as if it were its own use, and for ensuring that the installations it manages
+   comply with this Agreement.
 
-8. GOVERNING LAW
+5. A universal legal successor of the Customer (for example after a merger) succeeds to the licenses
+   by operation of law and must notify MageMe and update the account promptly. A buyer of assets or
+   of the business may take over a license only under section 5.2 or 5.3.
 
-    1. This License agreement and any dispute arising out of or in connection with this License
-    agreement shall be governed by and construed in accordance with the laws of Republic of Slovenia.
+6. RESTRICTIONS
+
+You may not:
+
+1. use one Production License on more than one live Production Installation at the same time, except
+   as section 2.3 permits during a migration, or hold fewer active Production Licenses (section 1.5)
+   for a product than the number of live Production Installations on which that product is used at
+   any time;
+
+2. use a Development License on a live installation;
+
+3. install, activate or use a version of the Software that is not a Covered Version for your
+   license, including a version released after your Plan ended, unless you first renew the Plan;
+
+4. sell, sublicense, rent or lend the Software, or provide the Software itself, its source code or
+   administrative access to it to third parties as a hosted or standalone product, or include the
+   Software, modified or not, in a product, theme, package or service that you sell, license or host
+   for third parties, except by transferring a license under section 5; operating a Production
+   Installation licensed as required by section 1.4 is permitted, and so is access by your personnel
+   and contractors under section 2.6;
+
+5. publish the source code of the Software (except stylesheets, JavaScript and images delivered to
+   the browser, and third-party components whose own license requires source availability) or place
+   it in a publicly accessible repository;
+
+6. remove, hide or alter copyright, license or ownership notices in the Software, including notices
+   in file and class names, code comments and the admin interface;
+
+7. circumvent, disable, falsify or conceal information from license activation or verification, or
+   help anyone else to do so, except to the limited extent that applicable law grants a right that
+   cannot be excluded;
+
+8. reverse engineer, decompile or disassemble the Software or derive its non-public protocols or
+   structure from it, except to the extent that applicable law grants a right that cannot be
+   excluded;
+
+9. copy or use MageMe's source code, protected expression or trade secrets to create or distribute
+   competing software, or use MageMe's name or trademarks without written permission; this does not
+   restrict independently created software or lawful competition.
+
+7. UNAUTHORIZED USE AND COMPLIANCE
+
+1. If MageMe finds that the Software is used in breach of this Agreement, MageMe gives you at least
+   15 days to remedy the breach and, pending clarification, may apply proportionate temporary
+   restrictions. No remedy period is required where the breach cannot be remedied or involves
+   deliberate circumvention of activation or verification, distribution or publication of the
+   Software or its source code, fraud, a sanctions breach, an immediate material security threat to
+   MageMe's services, or repeated breach; in these cases MageMe may suspend or terminate the
+   affected licenses, downloads or support immediately, and may restrict the whole account where the
+   breach, fraud, sanctions issue or security threat affects the account as a whole. MageMe states
+   the general basis of a restriction where disclosure is lawful and does not compromise security or
+   enforcement, and may maintain it while its grounds continue.
+
+2. For proven unauthorized use, you owe MageMe the license or renewal fee applicable to the
+   identified installations and the actual periods of unauthorized use, statutory interest from the
+   date a quantified amount became due, enforcement costs recoverable under law, and any further
+   loss MageMe can prove, without double recovery. For use of a version that is not a Covered
+   Version, the fee is the renewal fee that would have covered the versions used, calculated under
+   section 3.3 as if the Plan had been renewed on the date the unauthorized use began, at the list
+   renewal price without grace discount. Payment of these fees does not create a license for the
+   past or the future unless MageMe says so in writing. A Consumer is liable only to the extent
+   permitted by mandatory law.
+
+3. On MageMe's written request with reasonable grounds, a Business Customer provides within 14 days
+   a list of the installations where the Software is used and a written confirmation of compliance.
+   If these do not resolve the concern, an independent auditor bound by confidentiality may verify
+   compliance, on at least 10 business days' notice, during business hours, no more than once in 12
+   months unless material under-licensing is found, and limited to records and systems needed to
+   verify licensing. MageMe bears the cost of the audit unless it finds material under-licensing, in
+   which case the Business Customer pays the documented reasonable costs. Under-licensing is
+   material if it requires at least one additional Production License or Plan renewal.
+
+4. A Business Customer will indemnify MageMe against third-party claims, final awards and reasonable
+   defence costs arising from the Customer's culpable breach of this Agreement, unlawful content,
+   unlawful use of the Software, a modification not supplied by MageMe, or the data the Customer
+   collects or processes with the Software, except to the extent caused by MageMe. MageMe notifies
+   the Customer promptly, lets the Customer control the defence with competent counsel, cooperates
+   reasonably and does not settle in a way that imposes liability or admissions on the Customer
+   without the Customer's consent.
+
+5. Other rights and remedies under applicable law, including injunctive relief, remain unaffected.
+
+8. WARRANTY AND SUPPORT
+
+1. During an active Plan, MageMe will use commercially reasonable efforts to assess reproducible
+   defects reported in the latest Covered Version running in a supported environment. MageMe chooses
+   whether to provide advice, a workaround or a correction, and gives no response-time, resolution-
+   time or correction guarantee unless expressly agreed in writing. Support is provided only through
+   the channel and within the scope described in the Support Policy.
+
+2. Supported environments are the versions of Magento, PHP and other platform components stated in
+   the release notes of the Covered Version or, where the release notes do not state them, in the
+   compatibility specification shown on the product page when the Plan began or was last renewed.
+   Later changes apply only to later versions. Support does not include custom development,
+   installation, configuration, migration, training, data recovery, performance tuning, or defects
+   caused by third-party extensions, themes, hosting environments, Customer modifications or
+   unsupported environments. MageMe may decline support for modified Software or unsupported
+   environments. You are responsible for checking the published requirements before purchase and for
+   maintaining a supported environment.
+
+3. For Business Customers, except for the express obligations in this Agreement, the Software is
+   provided "as is" without further warranties, to the fullest extent permitted by law. MageMe
+   excludes liability and remedies for material and legal defects under the Obligations Code and
+   similar rules, and does not warrant that the Software is error-free, secure, free of
+   vulnerabilities, will run without interruption, is fit for a particular purpose or your business
+   needs, will achieve any result, or is compatible with environments, extensions, themes or
+   versions not listed as supported for that version. This exclusion does not apply to the
+   compatibility specification that forms part of the contract documents, to a defect MageMe
+   knowingly concealed, to an express written warranty, or where liability cannot lawfully be
+   excluded.
+
+4. MageMe is not responsible for a defect or lack of conformity caused solely by your failure to
+   install, within a reasonable time, an update that MageMe made available and announced together
+   with the consequences of not installing it, provided the installation instructions were adequate.
+   A Consumer who reports a lack of conformity must give the cooperation reasonably necessary, by
+   the least intrusive technical means available, to determine whether the cause lies in the
+   Consumer's own digital environment.
+
+5. The Software must not be used where a failure could reasonably endanger life or health or cause
+   serious physical or environmental damage.
+
+6. You are solely responsible for the data you collect or process with the Software, for compliance
+   with data protection, consumer and other laws applying to your store, for the content of forms,
+   messages and other content you create, and for configuring the Software accordingly. Operation of
+   the Software does not by itself give MageMe access to your store content; data MageMe receives
+   through activation, support or another service is processed under the Privacy Policy and, where
+   required, a data processing agreement.
+
+7. Consumers keep their statutory rights regarding conformity of digital content, including updates
+   required by law, under applicable mandatory law. Nothing in this section limits those rights.
+
+9. LIMITATION OF LIABILITY
+
+1. For Business Customers, to the fullest extent permitted by law, MageMe is not liable for indirect
+   or consequential loss, for loss of profit, revenue, sales, goodwill, business opportunity or
+   anticipated savings, for loss of or damage to data, for business interruption, for the cost of
+   substitute products, or for claims by your customers or other third parties.
+
+2. For Business Customers, MageMe's total liability arising out of or relating to a license and its
+   Plan, for all claims together and on any legal basis, is limited to the greater of (a) the
+   initial price paid for that license and (b) the amounts paid for that license and its Plan in the
+   12 months before the event giving rise to the claim. For claims that do not relate to one
+   license, the cap is the total amount paid by the Customer to MageMe in the 12 months before the
+   event. All claims arising from the same cause or from related causes count as one claim arising
+   when the first such event occurred.
+
+3. These limitations do not apply to damage caused intentionally or by gross negligence, to injury
+   to life, body or health, or where liability cannot be limited under mandatory law. Liability
+   towards Consumers is governed by mandatory law.
+
+4. You are responsible for administering and securing your installation, for testing updates in a
+   non-production copy before using them live, and for keeping current, restorable backups of your
+   configuration and data. MageMe's liability is reduced to the extent that your failure to do so
+   caused or increased the loss.
+
+5. MageMe gives no indemnity for intellectual property claims unless expressly agreed in writing. If
+   use of the Software is enjoined or MageMe reasonably believes it may be, MageMe may modify or
+   replace the affected Software or terminate the affected license and refund the part of the price,
+   if any, required by mandatory law.
+
+10. CHANGES TO THIS AGREEMENT AND TO SERVICES
+
+1. MageMe may publish a new version of this Agreement at any time. The new version applies to
+   orders, Plan renewals and Generation Upgrades you accept after it takes effect, and to the
+   versions of the Software first supplied under them. Your use rights in versions that are already
+   Covered Versions stay as granted; in all other respects the latest version of this Agreement you
+   accepted governs the license.
+
+2. MageMe may change, suspend or discontinue the license server, the Repository, the account area,
+   support channels and other online services. MageMe gives advance notice only where this Agreement
+   or mandatory law requires it; changes required by law, for security or against abuse may take
+   effect immediately. If a change removes a material benefit of an active, paid Plan of a Business
+   Customer, MageMe chooses between continued access for the remaining paid Plan term and a pro-rata
+   refund of the Plan fee for the unavailable part; for the first year included in the purchase, the
+   Plan fee is the lower of the renewal price published for the product at the time of the order and
+   the price paid. For a Consumer, MageMe modifies digital content or a service supplied over a
+   period beyond what conformity requires only for a legal, security, anti-abuse, interoperability
+   or technical-maintenance reason, without additional charge, and with the notice and the rights to
+   keep the unchanged version or to terminate that mandatory law provides.
+
+3. Keep the contact details of your MageMe account current. Routine notices may be shown in the
+   account. Notices of termination, material service changes or changes to this Agreement are sent
+   to the account email address. An email notice is effective when it reaches the recipient's email
+   system in a form that can be accessed in the ordinary course; proof of correct sending is
+   presumed proof of receipt unless the recipient proves otherwise. Mandatory notice rules prevail.
+
+11. TERMINATION
+
+1. MageMe may terminate a license by written notice if you materially breach this Agreement and do
+   not remedy the breach within the period given under section 7.1, or immediately in the cases
+   listed in section 7.1 for which no remedy period is required. MageMe may terminate all licenses
+   of a Customer for repeated breach or for a breach listed in section 7.1 for which no remedy
+   period is required.
+
+2. After termination you must stop using the Software under the terminated license on all
+   installations, remove it, delete the license key, make all usable copies unusable, and make sure
+   your contractors do the same. Copies contained in backups that cannot reasonably be isolated must
+   stay inaccessible, must never be restored or used, and must be deleted through your ordinary
+   backup retention cycle. On request you confirm compliance in writing. MageMe may disable the
+   license key and deny downloads and support. A Business Customer that continues to use the
+   Software after termination bears MageMe's reasonable costs of enforcement to the extent
+   recoverable under applicable law.
+
+3. Your data stays in your installation; termination gives MageMe no access to it. After termination
+   MageMe may limit functions of the Software under section 4.2. A terminated license does not
+   permit storefront or other operational use.
+
+4. The end of a Plan is not a termination; section 3.2 applies.
+
+5. A valid termination by MageMe for your breach does not create a refund right. No refund is due
+   under the Refund Policy for a license that was used in a material breach of this Agreement that
+   is not cured under section 7.1, or where you are in such a breach at the time of the request;
+   this does not affect a Consumer's right of withdrawal or statutory remedies. This does not
+   exclude rights arising from MageMe's own breach or from mandatory law.
+
+6. Sections 1, 2.7, 3.4, 6, 7.2 to 7.5, 8.3 to 8.7, 9, 10.3, 11.2, 11.3, 11.5, 13, 14.3 and 15, the
+   ownership rules of section 2.6, and accrued payment obligations remain in force after
+   termination. The record-keeping and legal-claims provisions of section 4.4 survive for the period
+   and purposes permitted by data protection law and the Privacy Policy. Support rights do not
+   survive termination or the end of the Plan.
+
+12. RIGHT OF WITHDRAWAL (CONSUMERS)
+
+If the mandatory law applicable to your contract gives you a right of withdrawal as a Consumer, its
+period, exceptions and exercise are governed by that law; for a distance contract in the EU or EEA
+the period is ordinarily 14 days after conclusion of the contract, subject to the statutory
+extension where required information was not supplied. Because the Software is supplied as digital
+content for immediate download, before supply we ask at checkout for your express consent to begin
+supply during the withdrawal period and for your acknowledgement that you lose the right of
+withdrawal once supply has begun; we confirm your order, your consent and your acknowledgement by
+email. Loss of the right of withdrawal does not affect your statutory remedies for lack of
+conformity. The right of withdrawal applies to Consumers only. Refunds for Business Customers are
+governed by the Refund Policy.
+
+13. GOVERNING LAW AND JURISDICTION
+
+This Agreement is governed by the laws of the Republic of Slovenia, excluding its conflict-of-law
+rules and the UN Convention on Contracts for the International Sale of Goods. For Business
+Customers, the court in Ljubljana, Slovenia having subject-matter jurisdiction has exclusive
+jurisdiction; MageMe may also seek payment, interim relief or protection of its intellectual
+property in any court having jurisdiction over the Customer or the infringement. If you are a
+Consumer, you keep any protection that the mandatory law and the courts of your country of residence
+give you.
+
+14. DISCONTINUATION
+
+1. MageMe may discontinue a product, a version or a Generation at any time. Discontinuation ends new
+   versions and support for the affected product; section 10.2 applies to active, paid Plans. It
+   does not end your right to use Covered Versions under section 3.2. Consumers keep their mandatory
+   remedies.
+
+2. MageMe may permanently discontinue its license server. Already activated Covered Versions may
+   continue to operate without further verification where the Software technically supports this.
+   After discontinuation, new activations, reactivations and migrations that require license
+   verification are no longer available. MageMe has no obligation to provide an offline activation
+   mechanism or to maintain the license server indefinitely, subject to mandatory law.
+
+3. If MageMe discontinues the Repository, MageMe does not keep packages available for download; keep
+   your own copies.
+
+15. GENERAL
+
+1. Force majeure. MageMe is not liable for a delay or failure to the extent it is caused by an event
+   arising after conclusion of the contract that MageMe could not reasonably prevent, avoid or
+   overcome, such as infrastructure or supplier outages, cyberattacks, governmental action, natural
+   disaster, or serious illness or incapacity of key personnel, where the event meets that test. The
+   excuse lasts while the impediment continues. Mandatory consumer rights remain unaffected.
+
+2. Payments. Prices for Business Customers exclude VAT and other taxes unless stated otherwise;
+   Consumers pay the total price shown before ordering. Business Customers pay without set-off or
+   deduction except where mandatory law provides otherwise. An unpaid amount, a failed payment, or a
+   payment reversal not finally upheld by the payment provider, a court or applicable law is treated
+   as non-payment. MageMe may suspend the item or service for which payment is outstanding after
+   notice until payment is settled; a Production License is suspended only where the outstanding
+   amount is the initial price of that license, and non-payment of an optional Plan renewal does not
+   affect the right to use existing Covered Versions. If a discount or special offer was granted on
+   conditions that you did not meet, MageMe notifies you; a Business Customer then chooses within 14
+   days between cancellation of the affected order with a refund of the amount paid and an invoice
+   for the difference to the price without the discount; a Consumer is offered the refund only.
+
+3. Confidentiality. A Business Customer protects the non-public source code, license keys and
+   technical materials of the Software with at least reasonable care and discloses them only to
+   personnel and contractors who need them for licensed use and are bound by equivalent
+   confidentiality duties.
+
+4. Assignment. You may not assign this Agreement or a license except as described in section 5. You
+   consent in advance to MageMe transferring this Agreement, a license or any related rights and
+   obligations to any third party upon notice to you, provided the transfer does not reduce a non-
+   excludable Consumer right.
+
+5. Third-party components. Components identified in the notices delivered with the Software are
+   governed by their own open-source or third-party licenses. MageMe gives Business Customers no
+   additional warranty for those components.
+
+6. Export and sanctions. You must not export, supply or use the Software in breach of applicable
+   export-control or sanctions laws, or allow a prohibited person to use it. You confirm that you
+   are not a prohibited person.
+
+7. Entire agreement. The contract documents are the whole agreement about the license. They replace
+   earlier agreements about the same license and any license text shipped inside a Software package,
+   except as section 10.1 provides and except the third-party licenses in section 15.5. A Business
+   Customer confirms that it has not relied on any statement outside the contract documents, other
+   than an expressly designated written warranty; this does not exclude liability for intentional
+   conduct, gross negligence, deliberate concealment, or a statement that applicable law makes
+   binding.
+
+8. Severability and waiver. If a provision is found invalid or unenforceable, it is severed to the
+   extent necessary and the rest of the Agreement stays in force. For Business Customers, the
+   invalid provision is replaced by the valid provision that comes closest to its purpose, as far as
+   applicable law permits. A provision that is invalid for Consumers remains valid for Business
+   Customers. A delay in enforcing a right is not a waiver of that right.
+
+9. Relationship and third parties. The parties are independent contractors. This Agreement creates
+   no rights for third parties.
+
+10. Language. For Business Customers, this Agreement is concluded in English and the English text
+   prevails over any translation. Consumers receive the language version required by applicable law.

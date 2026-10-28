@@ -25,7 +25,6 @@
 
 /** @var \Hyva\Theme\ViewModel\HyvaCsp $hyvaCsp */
 
-$formKey         = $block->getLayout()->createBlock(\Magento\Framework\View\Element\FormKey::class)->getFormKey();
 $finalizeUrl     = $block->getUrl('withdraw-contract/api/finalize');
 $cancelUrl       = method_exists($block, 'getCancelActionUrl') ? $block->getCancelActionUrl() : '';
 $orderHistoryUrl = $block->getUrl('sales/order/history');
@@ -39,6 +38,9 @@ $blockingReason  = method_exists($block, 'getBlockingReason') ? $block->getBlock
 $orderMeta       = $block->getChildBlock('order_meta');
 $orderIncrement  = $orderMeta instanceof \MageMe\EUWithdrawal\Block\Withdraw\OrderMeta ? $orderMeta->getOrderIncrementId() : '';
 $orderForMeta    = $orderMeta instanceof \MageMe\EUWithdrawal\Block\Withdraw\OrderMeta ? $orderMeta->getOrder() : null;
+$statementIdentity = method_exists($block, 'getStatementIdentity')
+    ? $block->getStatementIdentity($orderForMeta)
+    : ['name' => '', 'email' => ''];
 
 $itemSelectorChild   = $block->getChildBlock('item_selector');
 $selectionModeVm     = $itemSelectorChild ? $itemSelectorChild->getData('selection_mode_view_model') : null;
@@ -251,7 +253,6 @@ if ($itemSelectorChild instanceof \MageMe\EUWithdrawal\Block\Withdraw\ItemSelect
 }
 
 $boot = [
-    'formKey'          => $formKey,
     'finalizeUrl'      => $finalizeUrl,
     'cancelUrl'        => $cancelUrl,
     'orderHistoryUrl'  => $orderHistoryUrl,
@@ -679,7 +680,7 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                 </template>
                 <p x-show="hasSelection()" class="mt-4 flex items-center gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[14px] leading-snug text-emerald-800">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0"><polyline points="5 13 9 17 19 7"/></svg>
-                    <span><?= $escaper->escapeHtml(__('The refund will be issued using your original payment method within 5-7 business days after we receive your return.')) ?></span>
+                    <span><?= $escaper->escapeHtml(__('We refund you no later than 14 days after we received your withdrawal. We may wait until we have the items back or you have shown that you sent them, whichever comes first. The refund goes to your original payment method.')) ?></span>
                 </p>
             </div>
         </aside>
@@ -774,12 +775,16 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                     </tbody>
                 </table>
 
-                <?php if ($shippingNotice !== ''): ?>
+                <?php if ($shippingNotice !== '' || $returnPolicyUrl !== ''): ?>
                     <div class="mt-4 flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
                         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="mt-0.5 shrink-0 text-gray-500"><path d="M3 6h12v9H3z"/><path d="M15 10h4l2 3v2h-6"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>
                         <div class="grow">
-                            <div class="font-medium text-gray-900"><?= $escaper->escapeHtml(__('Return shipping')) ?></div>
-                            <p class="mt-0.5 text-sm text-gray-600"><?= $escaper->escapeHtml($shippingNotice) ?></p>
+                            <?php if ($shippingNotice !== ''): ?>
+                                <div class="font-medium text-gray-900"><?= $escaper->escapeHtml(__('Return shipping')) ?></div>
+                                <p class="mt-0.5 text-sm text-gray-600"><?= $escaper->escapeHtml($shippingNotice) ?></p>
+                            <?php else: ?>
+                                <div class="font-medium text-gray-900"><?= $escaper->escapeHtml(__('Return policy')) ?></div>
+                            <?php endif; ?>
                         </div>
                         <?php if ($returnPolicyUrl !== ''): ?>
                             <a href="<?= $escaper->escapeUrl($returnPolicyUrl) ?>" target="_blank" rel="noopener" class="text-sm text-primary-darker hover:underline">
@@ -796,6 +801,20 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                         <p class="mt-0.5 text-sm text-gray-600"><?= $escaper->escapeHtml(__('Refund will be issued to your original payment method.')) ?></p>
                     </div>
                 </div>
+                <?php if ($statementIdentity['name'] !== '' || $statementIdentity['email'] !== ''): ?>
+                <div class="mt-4 flex items-start gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3" data-role="statement-identity">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="mt-0.5 shrink-0 text-gray-500"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <div>
+                        <div class="font-medium text-gray-900"><?= $escaper->escapeHtml(__('Your details')) ?></div>
+                        <?php if ($statementIdentity['name'] !== ''): ?>
+                            <p class="mt-0.5 text-sm text-gray-600"><?= $escaper->escapeHtml(__('Name')) ?>: <span class="font-medium text-gray-900"><?= $escaper->escapeHtml($statementIdentity['name']) ?></span></p>
+                        <?php endif; ?>
+                        <?php if ($statementIdentity['email'] !== ''): ?>
+                            <p class="mt-0.5 text-sm text-gray-600"><?= $escaper->escapeHtml(__('Receipt confirmation to')) ?>: <span class="font-medium text-gray-900"><?= $escaper->escapeHtml($statementIdentity['email']) ?></span></p>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -811,7 +830,7 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                 </dl>
                 <p class="mt-4 flex items-center gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[14px] leading-snug text-emerald-800">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0"><polyline points="5 13 9 17 19 7"/></svg>
-                    <span><?= $escaper->escapeHtml(__('The refund will be issued using your original payment method within 5-7 business days after we receive your return.')) ?></span>
+                    <span><?= $escaper->escapeHtml(__('We refund you no later than 14 days after we received your withdrawal. We may wait until we have the items back or you have shown that you sent them, whichever comes first. The refund goes to your original payment method.')) ?></span>
                 </p>
             </div>
         </aside>
@@ -842,7 +861,7 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                 </div>
                 <h1 class="mt-5 text-[22px] font-bold text-gray-900 leading-tight max-sm:text-[19px]"><?= $escaper->escapeHtml(__('Your return request has been submitted!')) ?></h1>
                 <p class="mt-3 max-w-[360px] text-[14px] leading-relaxed text-gray-500">
-                    <?= $escaper->escapeHtml(__("We've emailed you a notification with your return details and a prepaid return label (if applicable). You have 14 days from the delivery date to send your items back.")) ?>
+                    <?= $escaper->escapeHtml(__("We've emailed you a notification with your return details. Please send the items back within 14 days of the day you told us you are withdrawing from the contract.")) ?>
                 </p>
                 <div class="mt-6 text-[13px] text-gray-500"><?= $escaper->escapeHtml(__('Return request number')) ?></div>
                 <div class="relative mt-2 mb-4 w-full max-w-[320px] rounded-lg border border-gray-200 bg-gray-50 px-10 py-2.5">
@@ -925,6 +944,10 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                 <span><?= $escaper->escapeHtml(__('Total refund')) ?></span>
                 <span x-text="formatPrice(grandTotal())"></span>
             </div>
+            <p class="mt-4 flex items-center gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-[14px] leading-snug text-emerald-800">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="shrink-0"><polyline points="5 13 9 17 19 7"/></svg>
+                <span><?= $escaper->escapeHtml(__('We refund you no later than 14 days after we received your withdrawal. We may wait until we have the items back or you have shown that you sent them, whichever comes first. The refund goes to your original payment method. The amount may be reduced only if the items lost value because they were handled more than needed to check them.')) ?></span>
+            </p>
         </div>
 
         <div class="flex items-center justify-center gap-3 py-5 text-[14px] text-gray-500 max-sm:flex-col max-sm:gap-2">
@@ -1285,12 +1308,10 @@ $isSelectionEditable = !$isFullOrder && !$noEligibleItems;
                 return '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/></svg>';
             },
 
-            // Hyva rewrites every <input name="form_key"> from the cookie
-            // (hyva.getFormKey), so the DOM value is authoritative at send time
-            // and survives a session change on a long-open page.
+            // The form_key cookie is the one form key source on the page, shared with the
+            // seal-photo steps: hyva.getFormKey() reads it, or issues it when it is gone.
             currentFormKey() {
-                const hidden = this.$root.querySelector('input[name="form_key"]');
-                return (hidden && hidden.value) || this.boot.formKey || '';
+                return hyva.getFormKey();
             },
 
             stripText(strip) {

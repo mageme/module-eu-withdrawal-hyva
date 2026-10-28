@@ -54,7 +54,7 @@ $recaptcha = $viewModels->require(ReCaptchaViewModel::class);
                 <input id="mm-eu-w-email" type="email" name="email" required
                        class="mt-1.5 block w-full rounded-md border-gray-300 text-[15px] shadow-sm focus:border-primary focus:ring-primary"
                        placeholder="<?= $escaper->escapeHtmlAttr(__('you@example.com')) ?>">
-                <p class="mt-1 text-[13px] text-gray-500"><?= $escaper->escapeHtml(__('Must match the email used for the order.')) ?></p>
+                <p class="mt-1 text-[13px] text-gray-500"><?= $escaper->escapeHtml(__('Must match the email used for the order.')) ?> <?= $escaper->escapeHtml(__("We'll confirm receipt of your withdrawal at this address.")) ?></p>
             </div>
             <button type="submit" class="w-full rounded-lg bg-primary px-5 py-2.5 text-[15px] font-semibold text-white shadow-sm hover:bg-primary-darker max-sm:py-3 max-sm:text-[16px]">
                 <?= $escaper->escapeHtml(__('Find my order')) ?>
